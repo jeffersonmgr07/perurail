@@ -278,6 +278,12 @@
                 </div>
 
                 <div class="card">
+                  <div class="card__title">Saldo actual (para canjes)</div>
+                  <div class="card__value" id="milesBalance">0 pts</div>
+                  <div class="card__sub">Se descuenta cuando confirmas un canje/compra con millas.</div>
+                </div>
+
+                <div class="card">
                   <div class="card__title">Beneficios habilitados</div>
                   <ul class="bullets" id="benefitsList"></ul>
                   <div class="card__sub" id="benefitsNote"></div>
@@ -338,13 +344,13 @@
                   <div class="statusCard">
                     <div class="statusCard__title">Saldo HB 50% (one way)</div>
                     <div class="statusCard__value" id="hbBalanceText"></div>
-                    <div class="statusCard__sub">Se consume al confirmar canje</div>
+                    <div class="statusCard__sub">Se consume al confirmar</div>
                   </div>
 
                   <div class="statusCard">
-                    <div class="statusCard__title">Descuentos por rango</div>
-                    <div class="statusCard__valueSmall">Vistadome 12% · Expedition 9%</div>
-                    <div class="statusCard__sub">Aplican solo si promo vigente</div>
+                    <div class="statusCard__title">Saldo de millas</div>
+                    <div class="statusCard__value" id="milesBalanceTop"></div>
+                    <div class="statusCard__sub">Cada 1,000 millas = US$ 20</div>
                   </div>
                 </div>
 
@@ -355,14 +361,15 @@
               </div>
 
               <div class="canjesPro__grid">
-                <!-- PANEL IZQ: FORM -->
+                <!-- PANEL IZQ -->
                 <section class="proPanel">
                   <!-- HB ONLY -->
                   <div id="hbPanel" class="proPanel__body">
                     <div class="subhead subhead--flat">
                       <div class="subhead__title">Canje exclusivo · Hiram Bingham</div>
                       <div class="subhead__right">
-                        <span class="pill pill--gold">HB 50%</span>
+                        <span class="pill pill--gold">HB</span>
+                        <span class="pill">Published/Rack</span>
                       </div>
                     </div>
 
@@ -377,7 +384,15 @@
                         </label>
 
                         <label class="field field--inline">
-                          <span>Tren Hiram Bingham</span>
+                          <span>Tarifa</span>
+                          <select id="hbFareType">
+                            <option value="PUBLISHED">Tarifa publicada (US$ 570)</option>
+                            <option value="RACK">Tarifa Rack/Confidencial (US$ 490)</option>
+                          </select>
+                        </label>
+
+                        <label class="field field--inline">
+                          <span>Tren HB</span>
                           <select id="hbTrain"></select>
                         </label>
 
@@ -400,13 +415,47 @@
                         </label>
 
                         <div class="proHint">
-                          El 50% se aplica automáticamente hasta el saldo disponible.
+                          Regla: cupón y millas aplican solo a <strong>tarifa publicada</strong>. En Rack no aplica.
+                        </div>
+                      </div>
+
+                      <div class="proRow">
+                        <div class="coupon coupon--light">
+                          <div class="coupon__left">
+                            <div class="coupon__title">Cupón 50% (Published)</div>
+                            <div class="coupon__sub">No se acumula con HB50 (se usa el mejor escenario).</div>
+                          </div>
+                          <div class="coupon__right">
+                            <label class="field field--inline coupon__field">
+                              <span>Cupón</span>
+                              <input id="hbCoupon" type="text" placeholder="MCT-CUSCO-PR50-EXTRANET-2026" />
+                            </label>
+                            <button id="hbApplyCouponBtn" class="btn btn--accent" type="button">Aplicar</button>
+                            <div id="hbCouponStatus" class="coupon__status" aria-live="polite"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="proRow">
+                        <div class="coupon coupon--light">
+                          <div class="coupon__left">
+                            <div class="coupon__title">Usar millas</div>
+                            <div class="coupon__sub">Cada 1,000 millas reduce US$ 20. Solo Published.</div>
+                          </div>
+                          <div class="coupon__right">
+                            <label class="field field--inline coupon__field">
+                              <span>Millas a usar</span>
+                              <input id="hbMilesUse" type="number" min="0" step="1000" value="0" />
+                            </label>
+                            <button id="hbApplyMilesBtn" class="btn btn--accent" type="button">Aplicar</button>
+                            <div id="hbMilesStatus" class="coupon__status" aria-live="polite"></div>
+                          </div>
                         </div>
                       </div>
 
                       <div class="proRow">
                         <button class="btn btn--primary" type="submit" id="hbCalcBtn">Calcular</button>
-                        <button class="btn btn--accent" type="button" id="hbConfirmBtn" disabled>Confirmar canje</button>
+                        <button class="btn btn--accent" type="button" id="hbConfirmBtn" disabled>Confirmar</button>
                       </div>
                     </form>
                   </div>
@@ -417,7 +466,8 @@
                       <div class="subhead__title">Compra con beneficios · Expedition / Vistadome</div>
                       <div class="subhead__right">
                         <span class="pill">Rango</span>
-                        <span class="pill pill--gold">Cupón 50%</span>
+                        <span class="pill pill--gold">Cupón</span>
+                        <span class="pill">Millas</span>
                       </div>
                     </div>
 
@@ -444,6 +494,11 @@
                           <span>Tren</span>
                           <select id="discTrain"></select>
                         </label>
+
+                        <label class="field field--inline">
+                          <span>Cantidad (one way)</span>
+                          <input id="discQty" type="number" min="1" max="9" value="1" />
+                        </label>
                       </div>
 
                       <div class="proRow">
@@ -458,17 +513,16 @@
                           <span class="switch__label">Fecha abierta</span>
                         </label>
 
-                        <label class="field field--inline">
-                          <span>Cantidad (one way)</span>
-                          <input id="discQty" type="number" min="1" max="9" value="1" />
-                        </label>
+                        <div class="proHint">
+                          Aplicación: primero rango (Vistadome 12% / Expedition 9%), luego cupón 50%, luego millas.
+                        </div>
                       </div>
 
                       <div class="proRow">
                         <div class="coupon coupon--light">
                           <div class="coupon__left">
                             <div class="coupon__title">Cupón 50%</div>
-                            <div class="coupon__sub">Opcional. Se aplica sobre el subtotal (si promo vigente).</div>
+                            <div class="coupon__sub">Solo aplica a tarifa publicada (esta vista trabaja con published).</div>
                           </div>
                           <div class="coupon__right">
                             <label class="field field--inline coupon__field">
@@ -482,8 +536,25 @@
                       </div>
 
                       <div class="proRow">
+                        <div class="coupon coupon--light">
+                          <div class="coupon__left">
+                            <div class="coupon__title">Usar millas</div>
+                            <div class="coupon__sub">Cada 1,000 millas reduce US$ 20.</div>
+                          </div>
+                          <div class="coupon__right">
+                            <label class="field field--inline coupon__field">
+                              <span>Millas a usar</span>
+                              <input id="discMilesUse" type="number" min="0" step="1000" value="0" />
+                            </label>
+                            <button id="discApplyMilesBtn" class="btn btn--accent" type="button">Aplicar</button>
+                            <div id="discMilesStatus" class="coupon__status" aria-live="polite"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="proRow">
                         <button class="btn btn--primary" type="submit" id="discCalcBtn">Calcular</button>
-                        <button class="btn btn--accent" type="button" id="discConfirmBtn" disabled>Confirmar compra</button>
+                        <button class="btn btn--accent" type="button" id="discConfirmBtn" disabled>Confirmar</button>
                       </div>
                     </form>
                   </div>
@@ -500,7 +571,7 @@
 
                   <div class="summary">
                     <div class="summary__row">
-                      <div>Tarifa base (promo)</div>
+                      <div>Tarifa base</div>
                       <div id="sumBase" class="money">USD 0.00</div>
                     </div>
                     <div class="summary__row">
@@ -508,12 +579,16 @@
                       <div id="sumRank" class="money">- USD 0.00</div>
                     </div>
                     <div class="summary__row">
-                      <div>HB 50% aplicado</div>
+                      <div>HB 50%</div>
                       <div id="sumHB" class="money">- USD 0.00</div>
                     </div>
                     <div class="summary__row">
                       <div>Cupón 50%</div>
                       <div id="sumCoupon" class="money">- USD 0.00</div>
+                    </div>
+                    <div class="summary__row">
+                      <div>Descuento por millas</div>
+                      <div id="sumMiles" class="money">- USD 0.00</div>
                     </div>
                     <div class="summary__divider"></div>
                     <div class="summary__row summary__row--total">
