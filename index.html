@@ -123,7 +123,7 @@
                 <h3>Cupón 50% de descuento</h3>
                 <p id="promoStateText">Vigente hasta 27-feb-2026. Aplica el cupón para reducir automáticamente el total.</p>
                 <div class="promoBanner__code">
-                  Código: <strong>MCT50</strong>
+                  Código: <strong id="couponDisplayTop"></strong>
                 </div>
               </div>
             </section>
@@ -198,7 +198,7 @@
                   <div class="coupon__right">
                     <label class="field field--inline coupon__field">
                       <span>Cupón</span>
-                      <input id="couponCode" type="text" placeholder="Ej: MCT50" />
+                      <input id="couponCode" type="text" placeholder="Ej: MCT-CUSCO-PR50-EXTRANET-2026" />
                     </label>
 
                     <button id="applyCouponBtn" class="btn btn--accent" type="button">Aplicar</button>
@@ -318,148 +318,223 @@
           </footer>
         </section>
 
-        <!-- VIEW: CANJES -->
+        <!-- VIEW: CANJES PRO -->
         <section id="view-canjes" class="view hidden">
           <section class="panel">
             <div class="panel__title">
-              <h2>Módulo de Canjes</h2>
-              <div class="panel__badge">Pro</div>
+              <h2>Canjes y Beneficios</h2>
+              <div class="panel__badge">PRO</div>
             </div>
 
-            <div class="redeemWrap">
-              <section class="redeemLeft">
-                <div class="subhead">
-                  <div class="subhead__title">Configuración del canje</div>
-                  <div class="subhead__right">
-                    <span id="redeemPromoBadge" class="pill pill--gold">Promo vigente</span>
+            <div class="canjesPro">
+              <div class="canjesPro__top">
+                <div class="canjesPro__status">
+                  <div class="statusCard">
+                    <div class="statusCard__title">Vigencia</div>
+                    <div class="statusCard__value" id="redeemPromoText"></div>
+                    <div class="statusCard__sub">Hasta 27-feb-2026</div>
+                  </div>
+
+                  <div class="statusCard">
+                    <div class="statusCard__title">Saldo HB 50% (one way)</div>
+                    <div class="statusCard__value" id="hbBalanceText"></div>
+                    <div class="statusCard__sub">Se consume al confirmar canje</div>
+                  </div>
+
+                  <div class="statusCard">
+                    <div class="statusCard__title">Descuentos por rango</div>
+                    <div class="statusCard__valueSmall">Vistadome 12% · Expedition 9%</div>
+                    <div class="statusCard__sub">Aplican solo si promo vigente</div>
                   </div>
                 </div>
 
-                <form id="redeemForm" class="redeemForm">
-                  <div class="redeemRow">
-                    <label class="field field--inline">
-                      <span>Ruta</span>
-                      <select id="redeemRoute">
-                        <option value="OLLA-MAPI">OLLANTAYTAMBO → MACHU PICCHU</option>
-                        <option value="MAPI-OLLA">MACHU PICCHU → OLLANTAYTAMBO</option>
-                      </select>
-                    </label>
+                <div class="segmented" role="tablist" aria-label="Selector de módulos">
+                  <button class="segmented__btn is-active" id="tabHB" type="button">Canje Hiram Bingham</button>
+                  <button class="segmented__btn" id="tabDISC" type="button">Compra con beneficios</button>
+                </div>
+              </div>
 
-                    <label class="field field--inline">
-                      <span>Servicio</span>
-                      <select id="redeemService">
-                        <option value="Expedition">Expedition</option>
-                        <option value="Vistadome">Vistadome</option>
-                        <option value="Vistadome Observatory">Vistadome Observatory</option>
-                        <option value="Hiram Bingham">Hiram Bingham</option>
-                      </select>
-                    </label>
-
-                    <label class="field field--inline">
-                      <span>Tren</span>
-                      <select id="redeemTrain"></select>
-                    </label>
-                  </div>
-
-                  <div class="redeemRow">
-                    <label class="field field--inline">
-                      <span>Fecha</span>
-                      <input id="redeemDate" type="date" />
-                    </label>
-
-                    <label class="switch">
-                      <input id="openDate" type="checkbox" />
-                      <span class="switch__ui"></span>
-                      <span class="switch__label">Fecha abierta</span>
-                    </label>
-
-                    <label class="field field--inline">
-                      <span>Cantidad (one way)</span>
-                      <input id="redeemQty" type="number" min="1" max="9" value="1" />
-                    </label>
-                  </div>
-
-                  <div class="redeemRow">
-                    <div class="coupon coupon--light">
-                      <div class="coupon__left">
-                        <div class="coupon__title">Aplicación de beneficios</div>
-                        <div class="coupon__sub">Se aplica el mejor escenario según servicio y vigencia.</div>
+              <div class="canjesPro__grid">
+                <!-- PANEL IZQ: FORM -->
+                <section class="proPanel">
+                  <!-- HB ONLY -->
+                  <div id="hbPanel" class="proPanel__body">
+                    <div class="subhead subhead--flat">
+                      <div class="subhead__title">Canje exclusivo · Hiram Bingham</div>
+                      <div class="subhead__right">
+                        <span class="pill pill--gold">HB 50%</span>
                       </div>
-                      <div class="coupon__right">
-                        <label class="field field--inline coupon__field">
-                          <span>Cupón</span>
-                          <input id="redeemCoupon" type="text" placeholder="MCT50" />
+                    </div>
+
+                    <form id="hbForm" class="proForm">
+                      <div class="proRow">
+                        <label class="field field--inline">
+                          <span>Ruta</span>
+                          <select id="hbRoute">
+                            <option value="OLLA-MAPI">OLLANTAYTAMBO → MACHU PICCHU</option>
+                            <option value="MAPI-OLLA">MACHU PICCHU → OLLANTAYTAMBO</option>
+                          </select>
                         </label>
-                        <button id="redeemApplyCouponBtn" class="btn btn--accent" type="button">Aplicar</button>
-                        <div id="redeemCouponStatus" class="coupon__status" aria-live="polite"></div>
+
+                        <label class="field field--inline">
+                          <span>Tren Hiram Bingham</span>
+                          <select id="hbTrain"></select>
+                        </label>
+
+                        <label class="field field--inline">
+                          <span>Cantidad (one way)</span>
+                          <input id="hbQty" type="number" min="1" max="9" value="1" />
+                        </label>
+                      </div>
+
+                      <div class="proRow">
+                        <label class="field field--inline">
+                          <span>Fecha</span>
+                          <input id="hbDate" type="date" />
+                        </label>
+
+                        <label class="switch">
+                          <input id="hbOpenDate" type="checkbox" />
+                          <span class="switch__ui"></span>
+                          <span class="switch__label">Fecha abierta</span>
+                        </label>
+
+                        <div class="proHint">
+                          El 50% se aplica automáticamente hasta el saldo disponible.
+                        </div>
+                      </div>
+
+                      <div class="proRow">
+                        <button class="btn btn--primary" type="submit" id="hbCalcBtn">Calcular</button>
+                        <button class="btn btn--accent" type="button" id="hbConfirmBtn" disabled>Confirmar canje</button>
+                      </div>
+                    </form>
+                  </div>
+
+                  <!-- DISCOUNT PURCHASE -->
+                  <div id="discPanel" class="proPanel__body hidden">
+                    <div class="subhead subhead--flat">
+                      <div class="subhead__title">Compra con beneficios · Expedition / Vistadome</div>
+                      <div class="subhead__right">
+                        <span class="pill">Rango</span>
+                        <span class="pill pill--gold">Cupón 50%</span>
                       </div>
                     </div>
-                  </div>
 
-                  <div class="redeemRow">
-                    <div class="note">
-                      <div class="note__title">Condiciones</div>
-                      <ul class="bullets">
-                        <li>Promo vigente hasta 27-feb-2026.</li>
-                        <li>Hiram Bingham: 50% válido para hasta 09 pasajes one way (según beneficio acumulado).</li>
-                        <li>Vistadome: 12% de descuento (rango).</li>
-                        <li>Expedition: 9% de descuento (rango).</li>
-                        <li>Vistadome Observatory: sin descuento por rango en esta simulación.</li>
-                      </ul>
+                    <form id="discForm" class="proForm">
+                      <div class="proRow">
+                        <label class="field field--inline">
+                          <span>Ruta</span>
+                          <select id="discRoute">
+                            <option value="OLLA-MAPI">OLLANTAYTAMBO → MACHU PICCHU</option>
+                            <option value="MAPI-OLLA">MACHU PICCHU → OLLANTAYTAMBO</option>
+                          </select>
+                        </label>
+
+                        <label class="field field--inline">
+                          <span>Servicio</span>
+                          <select id="discService">
+                            <option value="Expedition">Expedition</option>
+                            <option value="Vistadome">Vistadome</option>
+                            <option value="Vistadome Observatory">Vistadome Observatory</option>
+                          </select>
+                        </label>
+
+                        <label class="field field--inline">
+                          <span>Tren</span>
+                          <select id="discTrain"></select>
+                        </label>
+                      </div>
+
+                      <div class="proRow">
+                        <label class="field field--inline">
+                          <span>Fecha</span>
+                          <input id="discDate" type="date" />
+                        </label>
+
+                        <label class="switch">
+                          <input id="discOpenDate" type="checkbox" />
+                          <span class="switch__ui"></span>
+                          <span class="switch__label">Fecha abierta</span>
+                        </label>
+
+                        <label class="field field--inline">
+                          <span>Cantidad (one way)</span>
+                          <input id="discQty" type="number" min="1" max="9" value="1" />
+                        </label>
+                      </div>
+
+                      <div class="proRow">
+                        <div class="coupon coupon--light">
+                          <div class="coupon__left">
+                            <div class="coupon__title">Cupón 50%</div>
+                            <div class="coupon__sub">Opcional. Se aplica sobre el subtotal (si promo vigente).</div>
+                          </div>
+                          <div class="coupon__right">
+                            <label class="field field--inline coupon__field">
+                              <span>Cupón</span>
+                              <input id="discCoupon" type="text" placeholder="MCT-CUSCO-PR50-EXTRANET-2026" />
+                            </label>
+                            <button id="discApplyCouponBtn" class="btn btn--accent" type="button">Aplicar</button>
+                            <div id="discCouponStatus" class="coupon__status" aria-live="polite"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="proRow">
+                        <button class="btn btn--primary" type="submit" id="discCalcBtn">Calcular</button>
+                        <button class="btn btn--accent" type="button" id="discConfirmBtn" disabled>Confirmar compra</button>
+                      </div>
+                    </form>
+                  </div>
+                </section>
+
+                <!-- PANEL DER: SUMMARY -->
+                <aside class="proPanel proPanel--summary">
+                  <div class="subhead subhead--flat">
+                    <div class="subhead__title">Resumen</div>
+                    <div class="subhead__right">
+                      <span class="pill">Cálculo</span>
                     </div>
                   </div>
 
-                  <div class="redeemRow">
-                    <button id="calcBtn" class="btn btn--primary" type="submit">Calcular monto</button>
-                    <button id="confirmBtn" class="btn btn--accent" type="button" disabled>Confirmar canje</button>
-                  </div>
-                </form>
-              </section>
+                  <div class="summary">
+                    <div class="summary__row">
+                      <div>Tarifa base (promo)</div>
+                      <div id="sumBase" class="money">USD 0.00</div>
+                    </div>
+                    <div class="summary__row">
+                      <div>Descuento por rango</div>
+                      <div id="sumRank" class="money">- USD 0.00</div>
+                    </div>
+                    <div class="summary__row">
+                      <div>HB 50% aplicado</div>
+                      <div id="sumHB" class="money">- USD 0.00</div>
+                    </div>
+                    <div class="summary__row">
+                      <div>Cupón 50%</div>
+                      <div id="sumCoupon" class="money">- USD 0.00</div>
+                    </div>
+                    <div class="summary__divider"></div>
+                    <div class="summary__row summary__row--total">
+                      <div>Total a pagar</div>
+                      <div id="sumTotal" class="money">USD 0.00</div>
+                    </div>
 
-              <aside class="redeemRight">
-                <div class="subhead">
-                  <div class="subhead__title">Resumen de pago</div>
-                  <div class="subhead__right">
-                    <span class="pill">Cálculo</span>
-                  </div>
-                </div>
-
-                <div class="summary">
-                  <div class="summary__row">
-                    <div>Tarifa base (promo)</div>
-                    <div id="sumBase" class="money">USD 0.00</div>
-                  </div>
-                  <div class="summary__row">
-                    <div>Descuento por rango</div>
-                    <div id="sumRank" class="money">- USD 0.00</div>
-                  </div>
-                  <div class="summary__row">
-                    <div>Descuento por canje (HB 50%)</div>
-                    <div id="sumHB" class="money">- USD 0.00</div>
-                  </div>
-                  <div class="summary__row">
-                    <div>Descuento cupón (50%)</div>
-                    <div id="sumCoupon" class="money">- USD 0.00</div>
-                  </div>
-                  <div class="summary__divider"></div>
-                  <div class="summary__row summary__row--total">
-                    <div>Total a pagar</div>
-                    <div id="sumTotal" class="money">USD 0.00</div>
+                    <div class="summary__meta" id="sumMeta"></div>
                   </div>
 
-                  <div class="summary__meta" id="sumMeta"></div>
-                </div>
-
-                <div class="card card--tight">
-                  <div class="card__title">Beneficios disponibles</div>
-                  <div class="card__sub" id="availBenefits"></div>
-                </div>
-              </aside>
+                  <div class="card card--tight">
+                    <div class="card__title">Beneficios disponibles</div>
+                    <div class="card__sub" id="availBenefits"></div>
+                  </div>
+                </aside>
+              </div>
             </div>
           </section>
 
           <footer class="footer">
-            <small>El módulo de canjes simula cálculo. No genera boletos reales.</small>
+            <small>Demo: canjes/pro beneficios. No se emiten boletos reales.</small>
           </footer>
         </section>
 
@@ -502,4 +577,3 @@
   <script src="./app.js"></script>
 </body>
 </html>
-
