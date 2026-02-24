@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PeruRail Extranet | Agencia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <!-- LOGIN -->
+  <main id="loginView" class="login">
+    <div class="login__shell">
+      <header class="login__top">
+        <div class="brand">
+          <div class="brand__mark" aria-hidden="true"></div>
+          <div class="brand__text">
+            <div class="brand__name">PERURAIL</div>
+            <div class="brand__sub">Extranet de Agencias</div>
+          </div>
+        </div>
+        <div class="login__meta">AGENTES AUTORIZADOS</div>
+      </header>
+
+      <section class="login__card">
+        <div class="login__hero">
+          <div class="login__heroOverlay">
+            <h1>INICIO DE SESIÓN</h1>
+            <p>Accede para cotizar y comprar boletos.</p>
+          </div>
+        </div>
+
+        <form id="loginForm" class="login__form" autocomplete="on">
+          <label class="field">
+            <span>Usuario</span>
+            <input id="user" type="text" placeholder="Usuario" required />
+          </label>
+          <label class="field">
+            <span>Contraseña</span>
+            <input id="pass" type="password" placeholder="Contraseña" required />
+          </label>
+          <button class="btn btn--primary" type="submit">Ingresar</button>
+          <div class="login__hint">
+            Demo: cualquier usuario y contraseña.
+          </div>
+        </form>
+
+        <footer class="login__footer">
+          <small>© 2026 PeruRail - Demo Extranet. Todos los derechos reservados.</small>
+        </footer>
+      </section>
+    </div>
+  </main>
+
+  <!-- APP -->
+  <div id="appView" class="app hidden">
+    <header class="topbar">
+      <div class="topbar__left">
+        <div class="brand brand--small">
+          <div class="brand__mark" aria-hidden="true"></div>
+          <div class="brand__text">
+            <div class="brand__name">PERURAIL</div>
+            <div class="brand__sub">Extranet de Agencias</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="topbar__nav" aria-label="Navegación superior">
+        <a href="#" class="toplink is-active" data-view="compra">INICIO</a>
+        <a href="#" class="toplink" data-view="documentos">DOCUMENTOS</a>
+        <a href="#" class="toplink" data-view="comunicados">COMUNICADOS</a>
+        <a href="#" class="toplink" data-view="multimedia">MULTIMEDIA</a>
+        <a href="#" class="toplink" data-view="reportes">REPORTES</a>
+        <a href="#" class="toplink" data-view="opciones">OPCIONES</a>
+      </nav>
+
+      <div class="topbar__right">
+        <div class="userchip">
+          <span class="userchip__dot" aria-hidden="true"></span>
+          <span id="agentName">AGENCIA</span>
+        </div>
+        <button id="logoutBtn" class="btn btn--ghost" type="button">Salir</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar" aria-label="Menú lateral">
+        <a class="sideitem is-disabled" href="#">RESERVA<br><small>de Espacios</small></a>
+        <a class="sideitem is-active" href="#" data-module="compra">COMPRA<br><small>de Boletos</small></a>
+        <a class="sideitem" href="#" data-module="consulta">CONSULTA<br><small>de Reservas</small></a>
+        <a class="sideitem" href="#" data-module="registro">REGISTRO<br><small>de Pasajeros</small></a>
+        <a class="sideitem" href="#" data-module="pago">PAGO<br><small>de Reservas</small></a>
+        <a class="sideitem" href="#" data-module="emision">EMISIÓN<br><small>de Reservas</small></a>
+        <a class="sideitem" href="#" data-module="anular">ANULAR<br><small>Reserva</small></a>
+        <a class="sideitem" href="#" data-module="boarding">BOARDING PASS<br><small>Versión Móvil</small></a>
+        <a class="sideitem" href="#" data-module="impresion">IMPRESIÓN<br><small>de Boletos</small></a>
+      </aside>
+
+      <main class="content">
+        <section class="panel">
+          <div class="panel__title">
+            <h2>Compra de Boletos</h2>
+            <div class="panel__badge">PeruRail</div>
+          </div>
+
+          <form id="searchForm" class="filters">
+            <div class="filters__row">
+              <label class="field field--inline">
+                <span>Tipo de Viaje</span>
+                <select id="tripType">
+                  <option value="oneway">SOLO IDA</option>
+                  <option value="roundtrip">IDA Y RETORNO</option>
+                </select>
+              </label>
+
+              <div class="fieldgroup">
+                <div class="field field--inline">
+                  <span>Pasajeros</span>
+                  <div class="pax">
+                    <label>Adulto <input id="paxAdult" type="number" min="1" max="9" value="2"></label>
+                    <label>Niño <input id="paxChild" type="number" min="0" max="9" value="0"></label>
+                    <label>Guía <input id="paxGuide" type="number" min="0" max="2" value="0"></label>
+                  </div>
+                </div>
+              </div>
+
+              <label class="field field--inline">
+                <span>Código Promocional</span>
+                <input id="promoCode" type="text" placeholder="Opcional" />
+              </label>
+            </div>
+
+            <div class="filters__row">
+              <label class="field field--inline">
+                <span>Ruta</span>
+                <select id="route">
+                  <option value="OLLA-MAPI">OLLANTAYTAMBO → MACHU PICCHU</option>
+                  <option value="MAPI-OLLA">MACHU PICCHU → OLLANTAYTAMBO</option>
+                </select>
+              </label>
+
+              <label class="field field--inline">
+                <span>Fecha de Viaje (Ida)</span>
+                <input id="dateOut" type="date" />
+              </label>
+
+              <label class="field field--inline" id="returnWrap">
+                <span>Retorno</span>
+                <input id="dateBack" type="date" />
+              </label>
+
+              <label class="field field--inline">
+                <span>Servicio</span>
+                <select id="service">
+                  <option value="ALL">TODOS</option>
+                  <option value="Expedition">Expedition</option>
+                  <option value="Vistadome">Vistadome</option>
+                  <option value="Vistadome Observatory">Vistadome Observatory</option>
+                  <option value="Hiram Bingham">Hiram Bingham</option>
+                </select>
+              </label>
+
+              <button class="btn btn--primary" type="submit">Buscar</button>
+            </div>
+
+            <div class="filters__info" id="infoBox">
+              Selecciona ruta y servicio. Los precios mostrados son referenciales (Promo / Regular).
+            </div>
+          </form>
+
+          <section class="results">
+            <div class="results__head">
+              <div class="results__title">Itinerarios Encontrados</div>
+              <div class="results__right">
+                <label class="field field--inline field--small">
+                  <span>Ordenar</span>
+                  <select id="sortBy">
+                    <option value="timeAsc">Hora (Asc)</option>
+                    <option value="timeDesc">Hora (Desc)</option>
+                    <option value="priceAsc">Precio (Asc)</option>
+                    <option value="priceDesc">Precio (Desc)</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div class="tablewrap">
+              <table class="grid" aria-label="Tabla de itinerarios">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Ruta</th>
+                    <th>Servicio</th>
+                    <th>Tren</th>
+                    <th>Salida</th>
+                    <th>Llegada</th>
+                    <th>Duración</th>
+                    <th>Promo</th>
+                    <th>Regular</th>
+                    <th>Importe</th>
+                  </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+              </table>
+            </div>
+
+            <div class="results__footer">
+              <div id="countLabel">0 resultados</div>
+              <button id="buyBtn" class="btn btn--accent" type="button" disabled>Continuar</button>
+            </div>
+          </section>
+        </section>
+
+        <footer class="footer">
+          <small>Demo UI para GitHub Pages. No es un sistema de venta real.</small>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
