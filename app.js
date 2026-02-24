@@ -8,10 +8,15 @@ const PROMO_END_ISO = "2026-02-27"; // vigente hasta 27-feb-2026 (incluye el dí
 const VALID_COUPON = "MCT-CUSCO-PR50-EXTRANET-2026";
 const COUPON_RATE = 0.50;
 
-/* Beneficios por millas */
-const BENEFIT_HB_HALF_ONEWAY = 9;     // 09 pasajes (one way) HB al 50%
-const BENEFIT_VISTADOME_RATE = 0.12;  // 12% Vistadome
-const BENEFIT_EXPED_RATE = 0.09;      // 9% Expedition
+/* Millas: 1000 => $20 */
+const MILES_STEP = 1000;
+const USD_PER_1000_MILES = 20;
+const USD_PER_MILE = USD_PER_1000_MILES / MILES_STEP; // 0.02
+
+/* Beneficios */
+const BENEFIT_HB_HALF_ONEWAY = 9;     // HB 50% hasta 9 one way (solo PUBLISHED)
+const BENEFIT_VISTADOME_RATE = 0.12;  // 12% Vistadome (solo PUBLISHED)
+const BENEFIT_EXPED_RATE = 0.09;      // 9% Expedition (solo PUBLISHED)
 
 /* Millas por año (2016–2026) */
 const MILES_HISTORY = [
@@ -27,6 +32,7 @@ const MILES_HISTORY = [
   { year: 2025, pts: 712 },
   { year: 2026, pts: 52 },
 ];
+const INITIAL_MILES = MILES_HISTORY.reduce((a,b)=>a+b.pts,0); // 10,451
 
 /* Horarios (referenciales) */
 const SCHEDULES = [
@@ -82,23 +88,22 @@ const SCHEDULES = [
   { route:"MAPI-OLLA", service:"Vistadome", train:"76", depart:"21:50", arrive:"23:37", duration:"1 hr. 47 min", promo:61.75, regular:65.00 },
 ];
 
+/* HB tarifas: published vs rack (confidencial) */
+const HB_PUBLISHED = 570.00; // publicado por tramo
+const HB_RACK = 490.00;      // rack/confidencial (no aplica cupón ni millas ni HB50)
+
 /* Helpers */
 function money(n){ return `USD ${Number(n).toFixed(2)}`; }
 function toMinutes(hhmm){ const [h,m] = hhmm.split(":").map(Number); return h*60 + m; }
-function sum(arr){ return arr.reduce((a,b)=>a+b,0); }
 function safeUpper(s){ return (s || "").trim().toUpperCase(); }
 function isoToday(){
   const d = new Date();
   const local = new Date(d.getTime() - d.getTimezoneOffset()*60000);
   return local.toISOString().slice(0,10);
 }
-function isPromoActive(){
-  return isoToday() <= PROMO_END_ISO;
-}
-function setDateDefault(inputEl){
-  if(!inputEl) return;
-  inputEl.value = inputEl.value || isoToday();
-}
+function isPromoActive(){ return isoToday() <= PROMO_END_ISO; }
+function setDateDefault(inputEl){ if(inputEl) inputEl.value = inputEl.value || isoToday(); }
+
 function trainsFor(route, service){
   const rows = SCHEDULES.filter(r => r.route === route && r.service === service);
   const unique = [];
@@ -107,7 +112,7 @@ function trainsFor(route, service){
     const key = `${r.train}|${r.depart}`;
     if(seen.has(key)) return;
     seen.add(key);
-    unique.push({ train:r.train, depart:r.depart, arrive:r.arrive, duration:r.duration, promo:r.promo, route:r.route, service:r.service });
+    unique.push({ train:r.train, depart:r.depart, arrive:r.arrive, duration:r.duration });
   });
   unique.sort((a,b)=>toMinutes(a.depart)-toMinutes(b.depart));
   return unique;
@@ -121,13 +126,20 @@ function rankDiscountRate(service){
   return 0;
 }
 
+/* Miles helpers */
+function normalizeMilesInput(raw){
+  const n = Math.max(0, Number(raw || 0));
+  // redondear hacia abajo a múltiplos de 1000
+  return Math.floor(n / MILES_STEP) * MILES_STEP;
+}
+function milesToUsd(miles){ return miles * USD_PER_MILE; }
+
 /* Elements */
 const loginView = $("#loginView");
 const appView = $("#appView");
 const loginForm = $("#loginForm");
 const logoutBtn = $("#logoutBtn");
 
-/* Views */
 const viewCompra = $("#view-compra");
 const viewMillas = $("#view-millas");
 const viewCanjes = $("#view-canjes");
@@ -158,6 +170,7 @@ const promoStateText = $("#promoStateText");
 /* Millas */
 const milesBody = $("#milesBody");
 const milesTotal = $("#milesTotal");
+const milesBalanceEl = $("#milesBalance");
 const benefitsList = $("#benefitsList");
 const benefitsNote = $("#benefitsNote");
 const promoStatusBox = $("#promoStatusBox");
@@ -165,20 +178,36 @@ const promoStatusBox = $("#promoStatusBox");
 /* Canjes PRO */
 const redeemPromoText = $("#redeemPromoText");
 const hbBalanceText = $("#hbBalanceText");
+const milesBalanceTop = $("#milesBalanceTop");
 const availBenefits = $("#availBenefits");
 const tabHB = $("#tabHB");
 const tabDISC = $("#tabDISC");
 const hbPanel = $("#hbPanel");
 const discPanel = $("#discPanel");
 
+/* Shared summary */
+const sumBaseEl = $("#sumBase");
+const sumRankEl = $("#sumRank");
+const sumHBEl = $("#sumHB");
+const sumCouponEl = $("#sumCoupon");
+const sumMilesEl = $("#sumMiles");
+const sumTotalEl = $("#sumTotal");
+const sumMetaEl = $("#sumMeta");
+
 /* HB only */
 const hbForm = $("#hbForm");
 const hbRoute = $("#hbRoute");
+const hbFareType = $("#hbFareType");
 const hbTrain = $("#hbTrain");
 const hbQty = $("#hbQty");
 const hbDate = $("#hbDate");
 const hbOpenDate = $("#hbOpenDate");
-const hbCalcBtn = $("#hbCalcBtn");
+const hbCoupon = $("#hbCoupon");
+const hbApplyCouponBtn = $("#hbApplyCouponBtn");
+const hbCouponStatus = $("#hbCouponStatus");
+const hbMilesUse = $("#hbMilesUse");
+const hbApplyMilesBtn = $("#hbApplyMilesBtn");
+const hbMilesStatus = $("#hbMilesStatus");
 const hbConfirmBtn = $("#hbConfirmBtn");
 
 /* Discount purchase */
@@ -192,24 +221,23 @@ const discOpenDate = $("#discOpenDate");
 const discCoupon = $("#discCoupon");
 const discApplyCouponBtn = $("#discApplyCouponBtn");
 const discCouponStatus = $("#discCouponStatus");
+const discMilesUse = $("#discMilesUse");
+const discApplyMilesBtn = $("#discApplyMilesBtn");
+const discMilesStatus = $("#discMilesStatus");
 const discConfirmBtn = $("#discConfirmBtn");
-
-/* Shared summary */
-const sumBaseEl = $("#sumBase");
-const sumRankEl = $("#sumRank");
-const sumHBEl = $("#sumHB");
-const sumCouponEl = $("#sumCoupon");
-const sumTotalEl = $("#sumTotal");
-const sumMetaEl = $("#sumMeta");
 
 /* State */
 let selectedRowId = null;
 let compraCouponApplied = false;
 
-/* Canjes state */
-let hbHalfBalance = BENEFIT_HB_HALF_ONEWAY; // se consume al confirmar
+let hbHalfBalance = BENEFIT_HB_HALF_ONEWAY;   // saldo HB50 (solo published)
+let milesBalance = INITIAL_MILES;             // saldo real de millas para descuento
+let hbCouponApplied = false;
+let hbMilesApplied = 0;
 let discCouponApplied = false;
-let lastCalc = null; // guarda último cálculo (HB o DISC)
+let discMilesApplied = 0;
+
+let lastCalc = null; // {kind, ...}
 
 /* UI helpers */
 function passengersCount(){
@@ -223,51 +251,61 @@ function toggleReturn(){
 function updatePromoUI(){
   const active = isPromoActive();
 
-  // Compra banner
   if(promoStateText){
     promoStateText.textContent = active
       ? "Vigente hasta 27-feb-2026. Aplica el cupón para reducir automáticamente el total."
       : "Promo expirada. El cupón y los beneficios están deshabilitados.";
   }
-
-  // Coupon display
   if(couponDisplayTop) couponDisplayTop.textContent = VALID_COUPON;
 
-  // Compra coupon status baseline
   if(!active){
     compraCouponApplied = false;
     couponStatus.classList.remove("ok");
     couponStatus.classList.add("bad");
     couponStatus.textContent = "Promo expirada. Cupón deshabilitado.";
-  } else {
-    if(!couponStatus.textContent.trim()){
-      couponStatus.textContent = "Sin cupón aplicado.";
-    }
+  } else if(!couponStatus.textContent.trim()){
+    couponStatus.textContent = "Sin cupón aplicado.";
   }
 
-  // Canjes header
-  if(redeemPromoText){
-    redeemPromoText.textContent = active ? "Promo vigente" : "Promo expirada";
-  }
-  if(hbBalanceText){
-    hbBalanceText.textContent = `${hbHalfBalance} disponible(s)`;
-  }
+  if(redeemPromoText) redeemPromoText.textContent = active ? "Promo vigente" : "Promo expirada";
+  if(hbBalanceText) hbBalanceText.textContent = `${hbHalfBalance} disponible(s)`;
+  if(milesBalanceTop) milesBalanceTop.textContent = `${milesBalance.toLocaleString("es-PE")} pts`;
+  if(milesBalanceEl) milesBalanceEl.textContent = `${milesBalance.toLocaleString("es-PE")} pts`;
+
   if(availBenefits){
     availBenefits.textContent = active
-      ? `HB 50% saldo: ${hbHalfBalance} one way. Vistadome: 12%. Expedition: 9%. Cupón: 50%.`
-      : "Promo expirada: no aplica HB/rango/cupón en cálculo.";
+      ? `HB50 saldo: ${hbHalfBalance} one way (solo Published). Vistadome 12% · Expedition 9%. Cupón 50% (solo Published). Millas: 1000 = $20 (solo Published).`
+      : "Promo expirada: no aplica HB/rango/cupón/millas en cálculo.";
   }
 
-  // Coupon DISC status
+  // HB coupon/miles status defaults
+  if(!active){
+    hbCouponApplied = false;
+    hbMilesApplied = 0;
+    hbCouponStatus.classList.remove("ok");
+    hbCouponStatus.classList.add("bad");
+    hbCouponStatus.textContent = "Promo expirada.";
+    hbMilesStatus.classList.remove("ok");
+    hbMilesStatus.classList.add("bad");
+    hbMilesStatus.textContent = "Promo expirada.";
+  } else {
+    if(!hbCouponStatus.textContent.trim()) hbCouponStatus.textContent = "Sin cupón aplicado.";
+    if(!hbMilesStatus.textContent.trim()) hbMilesStatus.textContent = "Sin millas aplicadas.";
+  }
+
+  // DISC coupon/miles status defaults
   if(!active){
     discCouponApplied = false;
+    discMilesApplied = 0;
     discCouponStatus.classList.remove("ok");
     discCouponStatus.classList.add("bad");
-    discCouponStatus.textContent = "Promo expirada. Cupón deshabilitado.";
+    discCouponStatus.textContent = "Promo expirada.";
+    discMilesStatus.classList.remove("ok");
+    discMilesStatus.classList.add("bad");
+    discMilesStatus.textContent = "Promo expirada.";
   } else {
-    if(!discCouponStatus.textContent.trim()){
-      discCouponStatus.textContent = "Sin cupón aplicado.";
-    }
+    if(!discCouponStatus.textContent.trim()) discCouponStatus.textContent = "Sin cupón aplicado.";
+    if(!discMilesStatus.textContent.trim()) discMilesStatus.textContent = "Sin millas aplicadas.";
   }
 }
 
@@ -361,8 +399,8 @@ function renderCompra(){
 
 function renderMillas(){
   milesBody.innerHTML = "";
-  const total = sum(MILES_HISTORY.map(x => x.pts));
-  milesTotal.textContent = `${total} pts`;
+  milesTotal.textContent = `${INITIAL_MILES.toLocaleString("es-PE")} pts`;
+  if(milesBalanceEl) milesBalanceEl.textContent = `${milesBalance.toLocaleString("es-PE")} pts`;
 
   MILES_HISTORY.forEach(row => {
     const tr = document.createElement("tr");
@@ -374,9 +412,10 @@ function renderMillas(){
   benefitsList.innerHTML = "";
 
   const items = [
-    `${BENEFIT_HB_HALF_ONEWAY} pasajes one way Hiram Bingham al 50% de descuento.`,
-    `Rango: ${Math.round(BENEFIT_VISTADOME_RATE*100)}% de descuento en Vistadome.`,
-    `Rango: ${Math.round(BENEFIT_EXPED_RATE*100)}% de descuento en Expedition.`,
+    `${BENEFIT_HB_HALF_ONEWAY} pasajes one way Hiram Bingham al 50% (solo tarifa publicada).`,
+    `Rango: ${Math.round(BENEFIT_VISTADOME_RATE*100)}% de descuento en Vistadome (published).`,
+    `Rango: ${Math.round(BENEFIT_EXPED_RATE*100)}% de descuento en Expedition (published).`,
+    `Millas: ${MILES_STEP.toLocaleString("es-PE")} pts = ${money(USD_PER_1000_MILES)} de descuento (published).`,
   ];
   items.forEach(t=>{
     const li = document.createElement("li");
@@ -435,7 +474,7 @@ function attachNavigation(){
   });
 }
 
-/* ---------------- Canjes PRO: Tabs ---------------- */
+/* ---------------- Tabs ---------------- */
 
 function setTab(which){
   const isHB = which === "HB";
@@ -455,13 +494,14 @@ function attachTabEvents(){
   tabDISC.addEventListener("click", ()=> setTab("DISC"));
 }
 
-/* ---------------- Canjes PRO: Shared Summary ---------------- */
+/* ---------------- Summary ---------------- */
 
 function resetSummary(msg){
   sumBaseEl.textContent = "USD 0.00";
   sumRankEl.textContent = "- USD 0.00";
   sumHBEl.textContent = "- USD 0.00";
   sumCouponEl.textContent = "- USD 0.00";
+  sumMilesEl.textContent = "- USD 0.00";
   sumTotalEl.textContent = "USD 0.00";
   sumMetaEl.textContent = msg || "Configura y calcula para ver el monto a pagar.";
 }
@@ -471,15 +511,33 @@ function renderSummary(calc){
     resetSummary(calc?.msg || "No se pudo calcular.");
     return;
   }
+
   sumBaseEl.textContent = money(calc.base);
-  sumRankEl.textContent = `- ${money(calc.discRank)}`;
-  sumHBEl.textContent = `- ${money(calc.discHB)}`;
-  sumCouponEl.textContent = `- ${money(calc.discCoupon)}`;
+  sumRankEl.textContent = `- ${money(calc.discRank || 0)}`;
+
+  if((calc.discHB || 0) > 0){
+    sumHBEl.innerHTML = `<span style="color:#0f5132;font-weight:900;">- ${money(calc.discHB)} (HB 50%)</span>`;
+  } else {
+    sumHBEl.textContent = `- ${money(0)}`;
+  }
+
+  if((calc.discCoupon || 0) > 0){
+    sumCouponEl.innerHTML = `<span style="color:#0f5132;font-weight:900;">- ${money(calc.discCoupon)} (Cupón)</span>`;
+  } else {
+    sumCouponEl.textContent = `- ${money(0)}`;
+  }
+
+  if((calc.discMiles || 0) > 0){
+    sumMilesEl.innerHTML = `<span style="color:#0f5132;font-weight:900;">- ${money(calc.discMiles)} (Millas)</span>`;
+  } else {
+    sumMilesEl.textContent = `- ${money(0)}`;
+  }
+
   sumTotalEl.textContent = money(calc.total);
   sumMetaEl.textContent = calc.meta;
 }
 
-/* ---------------- Canjes PRO: HB Only ---------------- */
+/* ---------------- HB Module ---------------- */
 
 function fillHBTrains(){
   const route = hbRoute.value;
@@ -504,43 +562,162 @@ function fillHBTrains(){
   });
 }
 
+function hbIsPublished(){
+  return hbFareType.value === "PUBLISHED";
+}
+
+function hbUnitFare(){
+  // La tarifa publicada es 570 por tramo (según tu regla)
+  return hbIsPublished() ? HB_PUBLISHED : HB_RACK;
+}
+
+function setHBCouponStatus(){
+  if(!isPromoActive()){
+    hbCouponApplied = false;
+    hbCouponStatus.classList.remove("ok");
+    hbCouponStatus.classList.add("bad");
+    hbCouponStatus.textContent = "Promo expirada.";
+    return;
+  }
+  if(!hbIsPublished()){
+    hbCouponApplied = false;
+    hbCouponStatus.classList.remove("ok");
+    hbCouponStatus.classList.add("bad");
+    hbCouponStatus.textContent = "Rack: cupón no aplica.";
+    return;
+  }
+  if(hbCouponApplied){
+    hbCouponStatus.classList.remove("bad");
+    hbCouponStatus.classList.add("ok");
+    hbCouponStatus.textContent = "Cupón aplicado (Published): 50% activo.";
+  } else {
+    hbCouponStatus.classList.remove("ok");
+    hbCouponStatus.classList.remove("bad");
+    hbCouponStatus.textContent = "Sin cupón aplicado.";
+  }
+}
+
+function setHBMilesStatus(){
+  if(!isPromoActive()){
+    hbMilesApplied = 0;
+    hbMilesStatus.classList.remove("ok");
+    hbMilesStatus.classList.add("bad");
+    hbMilesStatus.textContent = "Promo expirada.";
+    return;
+  }
+  if(!hbIsPublished()){
+    hbMilesApplied = 0;
+    hbMilesStatus.classList.remove("ok");
+    hbMilesStatus.classList.add("bad");
+    hbMilesStatus.textContent = "Rack: millas no aplican.";
+    return;
+  }
+  if(hbMilesApplied > 0){
+    hbMilesStatus.classList.remove("bad");
+    hbMilesStatus.classList.add("ok");
+    hbMilesStatus.textContent = `Millas aplicadas: ${hbMilesApplied.toLocaleString("es-PE")} pts (≈ ${money(milesToUsd(hbMilesApplied))}).`;
+  } else {
+    hbMilesStatus.classList.remove("ok");
+    hbMilesStatus.classList.remove("bad");
+    hbMilesStatus.textContent = "Sin millas aplicadas.";
+  }
+}
+
+/* Corrección: HB 50% se aplica de forma visible (solo PUBLISHED).
+   Regla adicional: cupón 50% también puede aplicar a PUBLISHED.
+   IMPORTANTE: HB50 y cupón NO se acumulan (ambos son 50%), se usa el mejor escenario:
+   - Primero HB50 (por saldo) y si quedan boletos sin HB50, el cupón puede cubrirlos.
+*/
 function calcHB(){
   if(!isPromoActive()){
-    return { ok:false, msg:"Promo expirada: no aplica canje HB 50%." };
+    return { ok:false, msg:"Promo expirada: no aplica canje HB / cupón / millas." };
   }
+
   const qty = Math.max(1, Number(hbQty.value || 1));
-  if(hbHalfBalance <= 0){
-    return { ok:false, msg:"Sin saldo HB 50% disponible." };
-  }
   const val = hbTrain.value;
-  if(!val){
-    return { ok:false, msg:"Selecciona un tren Hiram Bingham." };
-  }
+
+  if(!val) return { ok:false, msg:"Selecciona un tren Hiram Bingham." };
+
   const [train, depart] = val.split("|");
   const row = findRow(hbRoute.value, "Hiram Bingham", train, depart);
   if(!row) return { ok:false, msg:"No se encontró el tren seleccionado." };
 
-  const use = Math.min(qty, hbHalfBalance);
-  const base = row.promo * qty;
-  const discHB = (row.promo * use) * 0.50;
+  const published = hbIsPublished();
+  const unit = hbUnitFare(); // 570 o 490
+  const base = unit * qty;
 
-  const total = Math.max(0, base - discHB);
+  // En Rack no aplica nada (ni HB50, ni cupón, ni millas)
+  if(!published){
+    const dateInfo = hbOpenDate.checked ? "Fecha abierta" : (hbDate.value || "Sin fecha");
+    const meta = [
+      `HB (Rack/Confidencial)`,
+      `Tarifa: ${money(unit)} por tramo`,
+      `Ruta: ${row.route} · Tren: ${row.train}`,
+      `Fecha: ${dateInfo} · Cantidad: ${qty}`,
+      `Regla: en Rack no aplica HB50/cupón/millas.`
+    ].join("\n");
+
+    return {
+      ok:true, kind:"HB",
+      row, qty,
+      base,
+      discRank:0,
+      discHB:0,
+      discCoupon:0,
+      discMiles:0,
+      milesUsed:0,
+      total: base,
+      meta,
+      hbUse:0
+    };
+  }
+
+  // 1) HB 50% por saldo (sobre tarifa publicada)
+  const hbUse = Math.min(qty, hbHalfBalance); // cuántos boletos cubre el beneficio HB50
+  const discHB = (unit * hbUse) * 0.50;
+
+  // 2) Cupón 50% (solo en los boletos que NO entraron al HB50)
+  // ambos son 50% => no se acumulan en el mismo ticket
+  let discCoupon = 0;
+  if(hbCouponApplied){
+    const remainingForCoupon = qty - hbUse;
+    discCoupon = (unit * remainingForCoupon) * COUPON_RATE;
+  }
+
+  // Subtotal tras HB y cupón
+  let subtotal = base - discHB - discCoupon;
+
+  // 3) Millas (solo PUBLISHED)
+  const milesWant = hbMilesApplied; // ya normalizado al aplicar
+  const milesUsd = milesToUsd(milesWant);
+  const discMiles = Math.min(milesUsd, subtotal); // no exceder subtotal
+  const total = Math.max(0, subtotal - discMiles);
 
   const dateInfo = hbOpenDate.checked ? "Fecha abierta" : (hbDate.value || "Sin fecha");
-  const meta = `Canje HB 50% · Ruta ${row.route} · Tren ${row.train} · Fecha: ${dateInfo} · Cantidad: ${qty} · Aplicado a: ${use}`;
+  const meta = [
+    `HB (Published)`,
+    `Tarifa publicada: ${money(unit)} por tramo`,
+    `Ruta: ${row.route} · Tren: ${row.train}`,
+    `Fecha: ${dateInfo} · Cantidad: ${qty}`,
+    `HB50 aplicado a: ${hbUse} ticket(s) · Descuento/ticket: ${money(unit*0.50)}`,
+    hbCouponApplied ? `Cupón 50% aplicado a: ${qty - hbUse} ticket(s)` : `Cupón: no aplicado`,
+    hbMilesApplied > 0 ? `Millas usadas: ${hbMilesApplied.toLocaleString("es-PE")} pts (≈ ${money(milesUsd)})` : `Millas: no usadas`,
+    `Saldo HB50 después de confirmar: ${Math.max(0, hbHalfBalance - hbUse)}`,
+    `Saldo millas después de confirmar: ${Math.max(0, milesBalance - hbMilesApplied).toLocaleString("es-PE")} pts`,
+  ].join("\n");
 
   return {
-    ok:true,
-    kind:"HB",
-    qty,
-    hbUse: use,
-    row,
+    ok:true, kind:"HB",
+    row, qty,
     base,
-    discRank: 0,
+    discRank:0,
     discHB,
-    discCoupon: 0,
+    discCoupon,
+    discMiles,
+    milesUsed: hbMilesApplied,
     total,
-    meta
+    meta,
+    hbUse
   };
 }
 
@@ -549,6 +726,19 @@ function attachHBEvents(){
 
   hbRoute.addEventListener("change", ()=>{
     fillHBTrains();
+    hbConfirmBtn.disabled = true;
+    resetSummary();
+  });
+
+  hbFareType.addEventListener("change", ()=>{
+    // al cambiar tarifa, reset cupón y millas si es rack
+    if(!hbIsPublished()){
+      hbCouponApplied = false;
+      hbMilesApplied = 0;
+      hbMilesUse.value = "0";
+    }
+    setHBCouponStatus();
+    setHBMilesStatus();
     hbConfirmBtn.disabled = true;
     resetSummary();
   });
@@ -562,6 +752,58 @@ function attachHBEvents(){
     resetSummary();
   });
 
+  hbApplyCouponBtn.addEventListener("click", ()=>{
+    if(!isPromoActive()){
+      hbCouponApplied = false;
+      setHBCouponStatus();
+      return;
+    }
+    if(!hbIsPublished()){
+      hbCouponApplied = false;
+      setHBCouponStatus();
+      return;
+    }
+    const code = safeUpper(hbCoupon.value);
+    if(!code){
+      hbCouponApplied = false;
+      setHBCouponStatus();
+      return;
+    }
+    if(code === VALID_COUPON){
+      hbCouponApplied = true;
+      setHBCouponStatus();
+    } else {
+      hbCouponApplied = false;
+      hbCouponStatus.classList.remove("ok");
+      hbCouponStatus.classList.add("bad");
+      hbCouponStatus.textContent = "Cupón inválido.";
+    }
+  });
+
+  hbApplyMilesBtn.addEventListener("click", ()=>{
+    if(!isPromoActive()){
+      hbMilesApplied = 0;
+      setHBMilesStatus();
+      return;
+    }
+    if(!hbIsPublished()){
+      hbMilesApplied = 0;
+      setHBMilesStatus();
+      return;
+    }
+    const normalized = normalizeMilesInput(hbMilesUse.value);
+    if(normalized > milesBalance){
+      hbMilesApplied = 0;
+      hbMilesStatus.classList.remove("ok");
+      hbMilesStatus.classList.add("bad");
+      hbMilesStatus.textContent = `Saldo insuficiente. Disponibles: ${milesBalance.toLocaleString("es-PE")} pts.`;
+      return;
+    }
+    hbMilesApplied = normalized;
+    hbMilesUse.value = String(normalized);
+    setHBMilesStatus();
+  });
+
   hbForm.addEventListener("submit",(e)=>{
     e.preventDefault();
     const calc = calcHB();
@@ -573,17 +815,29 @@ function attachHBEvents(){
 
   hbConfirmBtn.addEventListener("click", ()=>{
     if(!lastCalc || !lastCalc.ok || lastCalc.kind!=="HB") return;
-    // consumir saldo
-    hbHalfBalance = Math.max(0, hbHalfBalance - (lastCalc.hbUse || 0));
+
+    // consumir HB50 solo si Published
+    if(hbIsPublished()){
+      hbHalfBalance = Math.max(0, hbHalfBalance - (lastCalc.hbUse || 0));
+      // consumir millas usadas
+      milesBalance = Math.max(0, milesBalance - (lastCalc.milesUsed || 0));
+    }
+
+    // reset aplicadores
+    hbMilesApplied = 0;
+    hbMilesUse.value = "0";
+    setHBMilesStatus();
+
     updatePromoUI();
+    renderMillas();
     hbConfirmBtn.disabled = true;
     lastCalc = null;
-    resetSummary("Canje confirmado (demo). Saldo HB actualizado.");
-    alert("Canje HB confirmado (demo).");
+    resetSummary("HB confirmado (demo). Saldo HB50 y millas actualizado.");
+    alert("Hiram Bingham confirmado (demo).");
   });
 }
 
-/* ---------------- Canjes PRO: Discount Purchase ---------------- */
+/* ---------------- Discount Purchase Module ---------------- */
 
 function fillDiscTrains(){
   const route = discRoute.value;
@@ -613,13 +867,13 @@ function setDiscCouponStatus(){
     discCouponApplied = false;
     discCouponStatus.classList.remove("ok");
     discCouponStatus.classList.add("bad");
-    discCouponStatus.textContent = "Promo expirada. Cupón deshabilitado.";
+    discCouponStatus.textContent = "Promo expirada.";
     return;
   }
   if(discCouponApplied){
     discCouponStatus.classList.remove("bad");
     discCouponStatus.classList.add("ok");
-    discCouponStatus.textContent = "Cupón aplicado: 50% activo en el subtotal.";
+    discCouponStatus.textContent = "Cupón aplicado: 50% activo.";
   } else {
     discCouponStatus.classList.remove("ok");
     discCouponStatus.classList.remove("bad");
@@ -627,9 +881,28 @@ function setDiscCouponStatus(){
   }
 }
 
+function setDiscMilesStatus(){
+  if(!isPromoActive()){
+    discMilesApplied = 0;
+    discMilesStatus.classList.remove("ok");
+    discMilesStatus.classList.add("bad");
+    discMilesStatus.textContent = "Promo expirada.";
+    return;
+  }
+  if(discMilesApplied > 0){
+    discMilesStatus.classList.remove("bad");
+    discMilesStatus.classList.add("ok");
+    discMilesStatus.textContent = `Millas aplicadas: ${discMilesApplied.toLocaleString("es-PE")} pts (≈ ${money(milesToUsd(discMilesApplied))}).`;
+  } else {
+    discMilesStatus.classList.remove("ok");
+    discMilesStatus.classList.remove("bad");
+    discMilesStatus.textContent = "Sin millas aplicadas.";
+  }
+}
+
 function calcDISC(){
   if(!isPromoActive()){
-    return { ok:false, msg:"Promo expirada: no aplican descuentos por rango ni cupón." };
+    return { ok:false, msg:"Promo expirada: no aplican descuentos ni millas." };
   }
 
   const qty = Math.max(1, Number(discQty.value || 1));
@@ -637,39 +910,51 @@ function calcDISC(){
 
   const val = discTrain.value;
   if(!val) return { ok:false, msg:"Selecciona un tren." };
+
   const [train, depart] = val.split("|");
   const row = findRow(discRoute.value, service, train, depart);
   if(!row) return { ok:false, msg:"No se encontró el tren seleccionado." };
 
   const base = row.promo * qty;
 
-  // Rango
+  // 1) Rango
   const rate = rankDiscountRate(service);
   const discRank = base * rate;
-
-  // Subtotal
   let subtotal = base - discRank;
 
-  // Cupón opcional
+  // 2) Cupón
   let discCoupon = 0;
   if(discCouponApplied){
     discCoupon = subtotal * COUPON_RATE;
     subtotal = subtotal - discCoupon;
   }
 
+  // 3) Millas
+  const milesUsd = milesToUsd(discMilesApplied);
+  const discMiles = Math.min(milesUsd, subtotal);
+  const total = Math.max(0, subtotal - discMiles);
+
   const dateInfo = discOpenDate.checked ? "Fecha abierta" : (discDate.value || "Sin fecha");
-  const meta = `Compra con beneficios · ${service} · Ruta ${row.route} · Tren ${row.train} · Fecha: ${dateInfo} · Cantidad: ${qty} · Rango: ${Math.round(rate*100)}%${discCouponApplied ? " · Cupón 50%" : ""}`;
+  const meta = [
+    `Compra con beneficios (Published)`,
+    `Servicio: ${service} · Ruta: ${row.route} · Tren: ${row.train}`,
+    `Fecha: ${dateInfo} · Cantidad: ${qty}`,
+    `Rango aplicado: ${Math.round(rate*100)}%`,
+    discCouponApplied ? `Cupón 50% aplicado` : `Cupón: no aplicado`,
+    discMilesApplied > 0 ? `Millas usadas: ${discMilesApplied.toLocaleString("es-PE")} pts (≈ ${money(milesUsd)})` : `Millas: no usadas`,
+    `Saldo millas después de confirmar: ${Math.max(0, milesBalance - discMilesApplied).toLocaleString("es-PE")} pts`,
+  ].join("\n");
 
   return {
-    ok:true,
-    kind:"DISC",
-    qty,
-    row,
+    ok:true, kind:"DISC",
+    row, qty,
     base,
     discRank,
-    discHB: 0,
+    discHB:0,
     discCoupon,
-    total: Math.max(0, subtotal),
+    discMiles,
+    milesUsed: discMilesApplied,
+    total,
     meta
   };
 }
@@ -677,24 +962,22 @@ function calcDISC(){
 function attachDiscEvents(){
   setDateDefault(discDate);
   setDiscCouponStatus();
+  setDiscMilesStatus();
 
   discRoute.addEventListener("change", ()=>{
     fillDiscTrains();
     discConfirmBtn.disabled = true;
     resetSummary();
   });
-
   discService.addEventListener("change", ()=>{
     fillDiscTrains();
     discConfirmBtn.disabled = true;
     resetSummary();
   });
-
   discTrain.addEventListener("change", ()=>{
     discConfirmBtn.disabled = true;
     resetSummary();
   });
-
   discOpenDate.addEventListener("change", ()=>{
     discDate.disabled = discOpenDate.checked;
   });
@@ -718,15 +1001,27 @@ function attachDiscEvents(){
       discCouponApplied = false;
       discCouponStatus.classList.remove("ok");
       discCouponStatus.classList.add("bad");
-      discCouponStatus.textContent = "Cupón inválido. Verifica el código.";
+      discCouponStatus.textContent = "Cupón inválido.";
     }
   });
 
-  discCoupon.addEventListener("keydown",(e)=>{
-    if(e.key==="Enter"){
-      e.preventDefault();
-      discApplyCouponBtn.click();
+  discApplyMilesBtn.addEventListener("click", ()=>{
+    if(!isPromoActive()){
+      discMilesApplied = 0;
+      setDiscMilesStatus();
+      return;
     }
+    const normalized = normalizeMilesInput(discMilesUse.value);
+    if(normalized > milesBalance){
+      discMilesApplied = 0;
+      discMilesStatus.classList.remove("ok");
+      discMilesStatus.classList.add("bad");
+      discMilesStatus.textContent = `Saldo insuficiente. Disponibles: ${milesBalance.toLocaleString("es-PE")} pts.`;
+      return;
+    }
+    discMilesApplied = normalized;
+    discMilesUse.value = String(normalized);
+    setDiscMilesStatus();
   });
 
   discForm.addEventListener("submit",(e)=>{
@@ -740,14 +1035,25 @@ function attachDiscEvents(){
 
   discConfirmBtn.addEventListener("click", ()=>{
     if(!lastCalc || !lastCalc.ok || lastCalc.kind!=="DISC") return;
+
+    // consumir millas usadas
+    milesBalance = Math.max(0, milesBalance - (lastCalc.milesUsed || 0));
+
+    // reset aplicadores
+    discMilesApplied = 0;
+    discMilesUse.value = "0";
+    setDiscMilesStatus();
+
+    updatePromoUI();
+    renderMillas();
     discConfirmBtn.disabled = true;
     lastCalc = null;
-    resetSummary("Compra confirmada (demo).");
-    alert("Compra con beneficios confirmada (demo).");
+    resetSummary("Compra confirmada (demo). Millas actualizadas.");
+    alert("Compra confirmada (demo).");
   });
 }
 
-/* ---------------- Init + Compra Events ---------------- */
+/* ---------------- Compra events ---------------- */
 
 function attachCompraEvents(){
   $("#searchForm").addEventListener("submit", (e)=>{
@@ -789,7 +1095,7 @@ function attachCompraEvents(){
     compraCouponApplied = false;
     couponStatus.classList.remove("ok");
     couponStatus.classList.add("bad");
-    couponStatus.textContent = "Cupón inválido. Verifica el código.";
+    couponStatus.textContent = "Cupón inválido.";
     renderCompra();
   });
 
@@ -806,8 +1112,9 @@ function attachCompraEvents(){
   });
 }
 
+/* ---------------- Init ---------------- */
+
 function initApp(){
-  // defaults date
   setDateDefault(dateOut);
   setDateDefault(dateBack);
   toggleReturn();
@@ -817,26 +1124,20 @@ function initApp(){
   renderCompra();
   renderMillas();
 
-  // Canjes defaults
+  // canjes defaults
   setDateDefault(hbDate);
   setDateDefault(discDate);
 
-  // Fill trains
   fillHBTrains();
   fillDiscTrains();
 
-  // Tabs
   attachTabEvents();
   setTab("HB");
 
-  // Bind modules
   attachHBEvents();
   attachDiscEvents();
 
-  // Nav
   attachNavigation();
-
-  // Default view
   setActiveView("compra");
 }
 
