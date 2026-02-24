@@ -3,14 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PeruRail Extranet | Agencia</title>
+  <title>PeruRail Extranet | My Cusco Trip</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <!-- LOGIN -->
+
+  <!-- LOGIN (mock) -->
   <main id="loginView" class="login">
     <div class="login__shell">
       <header class="login__top">
@@ -21,25 +24,25 @@
             <div class="brand__sub">Extranet de Agencias</div>
           </div>
         </div>
-        <div class="login__meta">AGENTES AUTORIZADOS</div>
+        <div class="login__meta">ACCESO DEMO</div>
       </header>
 
       <section class="login__card">
         <div class="login__hero">
           <div class="login__heroOverlay">
             <h1>INICIO DE SESIÓN</h1>
-            <p>Accede para cotizar y comprar boletos.</p>
+            <p>Demo UI para cotizar, aplicar promociones y canjear beneficios.</p>
           </div>
         </div>
 
         <form id="loginForm" class="login__form" autocomplete="on">
           <label class="field">
             <span>Usuario</span>
-            <input id="user" type="text" placeholder="Usuario" required />
+            <input type="text" placeholder="Usuario" required />
           </label>
           <label class="field">
             <span>Contraseña</span>
-            <input id="pass" type="password" placeholder="Contraseña" required />
+            <input type="password" placeholder="Contraseña" required />
           </label>
           <button class="btn btn--primary" type="submit">Ingresar</button>
           <div class="login__hint">
@@ -48,7 +51,7 @@
         </form>
 
         <footer class="login__footer">
-          <small>© 2026 PeruRail - Demo Extranet. Todos los derechos reservados.</small>
+          <small>© 2026 Demo Extranet. No es un sistema de venta real.</small>
         </footer>
       </section>
     </div>
@@ -68,154 +71,430 @@
       </div>
 
       <nav class="topbar__nav" aria-label="Navegación superior">
-        <a href="#" class="toplink is-active" data-view="compra">INICIO</a>
-        <a href="#" class="toplink" data-view="documentos">DOCUMENTOS</a>
-        <a href="#" class="toplink" data-view="comunicados">COMUNICADOS</a>
-        <a href="#" class="toplink" data-view="multimedia">MULTIMEDIA</a>
+        <a href="#" class="toplink is-active" data-view="compra">COMPRA</a>
+        <a href="#" class="toplink" data-view="millas">MILLAS</a>
+        <a href="#" class="toplink" data-view="canjes">CANJES</a>
         <a href="#" class="toplink" data-view="reportes">REPORTES</a>
         <a href="#" class="toplink" data-view="opciones">OPCIONES</a>
       </nav>
 
       <div class="topbar__right">
-        <div class="userchip">
-          <span class="userchip__dot" aria-hidden="true"></span>
-          <span id="agentName">AGENCIA</span>
+        <div class="profilechip" title="Perfil de Agencia / Usuario">
+          <div class="profilechip__icon" aria-hidden="true"></div>
+          <div class="profilechip__text">
+            <div class="profilechip__line1">
+              <strong>My Cusco Trip</strong> <span class="muted">RUC 20602335071</span>
+            </div>
+            <div class="profilechip__line2">
+              Jefferson García <span class="muted">DNI 45953665</span>
+            </div>
+          </div>
         </div>
+
         <button id="logoutBtn" class="btn btn--ghost" type="button">Salir</button>
       </div>
     </header>
 
     <div class="layout">
       <aside class="sidebar" aria-label="Menú lateral">
-        <a class="sideitem is-disabled" href="#">RESERVA<br><small>de Espacios</small></a>
-        <a class="sideitem is-active" href="#" data-module="compra">COMPRA<br><small>de Boletos</small></a>
-        <a class="sideitem" href="#" data-module="consulta">CONSULTA<br><small>de Reservas</small></a>
-        <a class="sideitem" href="#" data-module="registro">REGISTRO<br><small>de Pasajeros</small></a>
-        <a class="sideitem" href="#" data-module="pago">PAGO<br><small>de Reservas</small></a>
-        <a class="sideitem" href="#" data-module="emision">EMISIÓN<br><small>de Reservas</small></a>
-        <a class="sideitem" href="#" data-module="anular">ANULAR<br><small>Reserva</small></a>
-        <a class="sideitem" href="#" data-module="boarding">BOARDING PASS<br><small>Versión Móvil</small></a>
-        <a class="sideitem" href="#" data-module="impresion">IMPRESIÓN<br><small>de Boletos</small></a>
+        <a class="sideitem is-active" href="#" data-view="compra">COMPRA<br><small>de Boletos</small></a>
+        <a class="sideitem" href="#" data-view="millas">MILLAS<br><small>Acumulación</small></a>
+        <a class="sideitem" href="#" data-view="canjes">CANJES<br><small>Beneficios</small></a>
+        <a class="sideitem is-disabled" href="#">CONSULTA<br><small>de Reservas</small></a>
+        <a class="sideitem is-disabled" href="#">REGISTRO<br><small>de Pasajeros</small></a>
+        <a class="sideitem is-disabled" href="#">PAGO<br><small>de Reservas</small></a>
+        <a class="sideitem is-disabled" href="#">EMISIÓN<br><small>de Boletos</small></a>
       </aside>
 
       <main class="content">
-        <section class="panel">
-          <div class="panel__title">
-            <h2>Compra de Boletos</h2>
-            <div class="panel__badge">PeruRail</div>
-          </div>
 
-          <form id="searchForm" class="filters">
-            <div class="filters__row">
-              <label class="field field--inline">
-                <span>Tipo de Viaje</span>
-                <select id="tripType">
-                  <option value="oneway">SOLO IDA</option>
-                  <option value="roundtrip">IDA Y RETORNO</option>
-                </select>
-              </label>
+        <!-- VIEW: COMPRA -->
+        <section id="view-compra" class="view">
+          <section class="panel">
+            <div class="panel__title">
+              <h2>Compra de Boletos</h2>
+              <div class="panel__badge">Panel Agencia</div>
+            </div>
 
-              <div class="fieldgroup">
-                <div class="field field--inline">
-                  <span>Pasajeros</span>
-                  <div class="pax">
-                    <label>Adulto <input id="paxAdult" type="number" min="1" max="9" value="2"></label>
-                    <label>Niño <input id="paxChild" type="number" min="0" max="9" value="0"></label>
-                    <label>Guía <input id="paxGuide" type="number" min="0" max="2" value="0"></label>
+            <section class="promoBanner" aria-label="Promoción Cupón 50%">
+              <div class="promoBanner__image" role="img" aria-label="Banner de promoción"></div>
+              <div class="promoBanner__content">
+                <div class="promoBanner__badge">PROMO</div>
+                <h3>Cupón 50% de descuento</h3>
+                <p id="promoStateText">Vigente hasta 27-feb-2026. Aplica el cupón para reducir automáticamente el total.</p>
+                <div class="promoBanner__code">
+                  Código: <strong>MCT50</strong>
+                </div>
+              </div>
+            </section>
+
+            <form id="searchForm" class="filters">
+              <div class="filters__row">
+                <label class="field field--inline">
+                  <span>Tipo de Viaje</span>
+                  <select id="tripType">
+                    <option value="oneway">SOLO IDA</option>
+                    <option value="roundtrip">IDA Y RETORNO</option>
+                  </select>
+                </label>
+
+                <div class="fieldgroup">
+                  <div class="field field--inline">
+                    <span>Pasajeros</span>
+                    <div class="pax">
+                      <label>Adulto <input id="paxAdult" type="number" min="1" max="9" value="2"></label>
+                      <label>Niño <input id="paxChild" type="number" min="0" max="9" value="0"></label>
+                      <label>Guía <input id="paxGuide" type="number" min="0" max="2" value="0"></label>
+                    </div>
+                  </div>
+                </div>
+
+                <label class="field field--inline">
+                  <span>Código Promocional</span>
+                  <input id="promoCode" type="text" placeholder="Opcional" />
+                </label>
+              </div>
+
+              <div class="filters__row">
+                <label class="field field--inline">
+                  <span>Ruta</span>
+                  <select id="route">
+                    <option value="OLLA-MAPI">OLLANTAYTAMBO → MACHU PICCHU</option>
+                    <option value="MAPI-OLLA">MACHU PICCHU → OLLANTAYTAMBO</option>
+                  </select>
+                </label>
+
+                <label class="field field--inline">
+                  <span>Fecha de Viaje (Ida)</span>
+                  <input id="dateOut" type="date" />
+                </label>
+
+                <label class="field field--inline" id="returnWrap">
+                  <span>Retorno</span>
+                  <input id="dateBack" type="date" />
+                </label>
+
+                <label class="field field--inline">
+                  <span>Servicio</span>
+                  <select id="service">
+                    <option value="ALL">TODOS</option>
+                    <option value="Expedition">Expedition</option>
+                    <option value="Vistadome">Vistadome</option>
+                    <option value="Vistadome Observatory">Vistadome Observatory</option>
+                    <option value="Hiram Bingham">Hiram Bingham</option>
+                  </select>
+                </label>
+
+                <button class="btn btn--primary" type="submit">Buscar</button>
+              </div>
+
+              <div class="filters__row">
+                <div class="coupon">
+                  <div class="coupon__left">
+                    <div class="coupon__title">Cupón de descuento</div>
+                    <div class="coupon__sub">Simulación: 50% con código válido. Vigente hasta 27-feb-2026.</div>
+                  </div>
+
+                  <div class="coupon__right">
+                    <label class="field field--inline coupon__field">
+                      <span>Cupón</span>
+                      <input id="couponCode" type="text" placeholder="Ej: MCT50" />
+                    </label>
+
+                    <button id="applyCouponBtn" class="btn btn--accent" type="button">Aplicar</button>
+
+                    <div id="couponStatus" class="coupon__status" aria-live="polite"></div>
                   </div>
                 </div>
               </div>
 
-              <label class="field field--inline">
-                <span>Código Promocional</span>
-                <input id="promoCode" type="text" placeholder="Opcional" />
-              </label>
+              <div class="filters__info" id="infoBox">
+                Precios referenciales (Promo / Regular). Selecciona un itinerario para continuar.
+              </div>
+            </form>
+
+            <section class="results">
+              <div class="results__head">
+                <div class="results__title">Itinerarios Encontrados</div>
+                <div class="results__right">
+                  <label class="field field--inline field--small">
+                    <span>Ordenar</span>
+                    <select id="sortBy">
+                      <option value="timeAsc">Hora (Asc)</option>
+                      <option value="timeDesc">Hora (Desc)</option>
+                      <option value="priceAsc">Precio (Asc)</option>
+                      <option value="priceDesc">Precio (Desc)</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div class="tablewrap">
+                <table class="grid" aria-label="Tabla de itinerarios">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Ruta</th>
+                      <th>Servicio</th>
+                      <th>Tren</th>
+                      <th>Salida</th>
+                      <th>Llegada</th>
+                      <th>Duración</th>
+                      <th>Promo</th>
+                      <th>Regular</th>
+                      <th>Importe</th>
+                    </tr>
+                  </thead>
+                  <tbody id="resultsBody"></tbody>
+                </table>
+              </div>
+
+              <div class="results__footer">
+                <div id="countLabel">0 resultados</div>
+                <button id="buyBtn" class="btn btn--accent" type="button" disabled>Continuar</button>
+              </div>
+            </section>
+          </section>
+
+          <footer class="footer">
+            <small>Demo UI: Compra con promo, millas y canjes. Sin emisión real.</small>
+          </footer>
+        </section>
+
+        <!-- VIEW: MILLAS -->
+        <section id="view-millas" class="view hidden">
+          <section class="panel">
+            <div class="panel__title">
+              <h2>Millas acumuladas</h2>
+              <div class="panel__badge">My Cusco Trip</div>
             </div>
 
-            <div class="filters__row">
-              <label class="field field--inline">
-                <span>Ruta</span>
-                <select id="route">
-                  <option value="OLLA-MAPI">OLLANTAYTAMBO → MACHU PICCHU</option>
-                  <option value="MAPI-OLLA">MACHU PICCHU → OLLANTAYTAMBO</option>
-                </select>
-              </label>
+            <div class="milesWrap">
+              <div class="milesCards">
+                <div class="card">
+                  <div class="card__title">Total acumulado (2016–2026)</div>
+                  <div class="card__value" id="milesTotal">0 pts</div>
+                  <div class="card__sub">Historial registrado por año.</div>
+                </div>
 
-              <label class="field field--inline">
-                <span>Fecha de Viaje (Ida)</span>
-                <input id="dateOut" type="date" />
-              </label>
+                <div class="card">
+                  <div class="card__title">Beneficios habilitados</div>
+                  <ul class="bullets" id="benefitsList"></ul>
+                  <div class="card__sub" id="benefitsNote"></div>
+                </div>
 
-              <label class="field field--inline" id="returnWrap">
-                <span>Retorno</span>
-                <input id="dateBack" type="date" />
-              </label>
+                <div class="card">
+                  <div class="card__title">Estado de promoción</div>
+                  <div class="card__valueSmall" id="promoStatusBox"></div>
+                  <div class="card__sub">Los beneficios y el cupón dependen de la vigencia.</div>
+                </div>
+              </div>
 
-              <label class="field field--inline">
-                <span>Servicio</span>
-                <select id="service">
-                  <option value="ALL">TODOS</option>
-                  <option value="Expedition">Expedition</option>
-                  <option value="Vistadome">Vistadome</option>
-                  <option value="Vistadome Observatory">Vistadome Observatory</option>
-                  <option value="Hiram Bingham">Hiram Bingham</option>
-                </select>
-              </label>
+              <div class="milesTable">
+                <div class="subhead">
+                  <div class="subhead__title">Historial de acumulación</div>
+                  <div class="subhead__right">
+                    <span class="pill pill--gold">Puntos</span>
+                  </div>
+                </div>
 
-              <button class="btn btn--primary" type="submit">Buscar</button>
-            </div>
-
-            <div class="filters__info" id="infoBox">
-              Selecciona ruta y servicio. Los precios mostrados son referenciales (Promo / Regular).
-            </div>
-          </form>
-
-          <section class="results">
-            <div class="results__head">
-              <div class="results__title">Itinerarios Encontrados</div>
-              <div class="results__right">
-                <label class="field field--inline field--small">
-                  <span>Ordenar</span>
-                  <select id="sortBy">
-                    <option value="timeAsc">Hora (Asc)</option>
-                    <option value="timeDesc">Hora (Desc)</option>
-                    <option value="priceAsc">Precio (Asc)</option>
-                    <option value="priceDesc">Precio (Desc)</option>
-                  </select>
-                </label>
+                <div class="tablewrap">
+                  <table class="grid grid--compact" aria-label="Historial de millas">
+                    <thead>
+                      <tr>
+                        <th>Año</th>
+                        <th>Puntos</th>
+                      </tr>
+                    </thead>
+                    <tbody id="milesBody"></tbody>
+                  </table>
+                </div>
               </div>
             </div>
+          </section>
 
-            <div class="tablewrap">
-              <table class="grid" aria-label="Tabla de itinerarios">
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>Ruta</th>
-                    <th>Servicio</th>
-                    <th>Tren</th>
-                    <th>Salida</th>
-                    <th>Llegada</th>
-                    <th>Duración</th>
-                    <th>Promo</th>
-                    <th>Regular</th>
-                    <th>Importe</th>
-                  </tr>
-                </thead>
-                <tbody id="resultsBody"></tbody>
-              </table>
+          <footer class="footer">
+            <small>Los beneficios mostrados son de simulación para el entorno de agencia.</small>
+          </footer>
+        </section>
+
+        <!-- VIEW: CANJES -->
+        <section id="view-canjes" class="view hidden">
+          <section class="panel">
+            <div class="panel__title">
+              <h2>Módulo de Canjes</h2>
+              <div class="panel__badge">Pro</div>
             </div>
 
-            <div class="results__footer">
-              <div id="countLabel">0 resultados</div>
-              <button id="buyBtn" class="btn btn--accent" type="button" disabled>Continuar</button>
+            <div class="redeemWrap">
+              <section class="redeemLeft">
+                <div class="subhead">
+                  <div class="subhead__title">Configuración del canje</div>
+                  <div class="subhead__right">
+                    <span id="redeemPromoBadge" class="pill pill--gold">Promo vigente</span>
+                  </div>
+                </div>
+
+                <form id="redeemForm" class="redeemForm">
+                  <div class="redeemRow">
+                    <label class="field field--inline">
+                      <span>Ruta</span>
+                      <select id="redeemRoute">
+                        <option value="OLLA-MAPI">OLLANTAYTAMBO → MACHU PICCHU</option>
+                        <option value="MAPI-OLLA">MACHU PICCHU → OLLANTAYTAMBO</option>
+                      </select>
+                    </label>
+
+                    <label class="field field--inline">
+                      <span>Servicio</span>
+                      <select id="redeemService">
+                        <option value="Expedition">Expedition</option>
+                        <option value="Vistadome">Vistadome</option>
+                        <option value="Vistadome Observatory">Vistadome Observatory</option>
+                        <option value="Hiram Bingham">Hiram Bingham</option>
+                      </select>
+                    </label>
+
+                    <label class="field field--inline">
+                      <span>Tren</span>
+                      <select id="redeemTrain"></select>
+                    </label>
+                  </div>
+
+                  <div class="redeemRow">
+                    <label class="field field--inline">
+                      <span>Fecha</span>
+                      <input id="redeemDate" type="date" />
+                    </label>
+
+                    <label class="switch">
+                      <input id="openDate" type="checkbox" />
+                      <span class="switch__ui"></span>
+                      <span class="switch__label">Fecha abierta</span>
+                    </label>
+
+                    <label class="field field--inline">
+                      <span>Cantidad (one way)</span>
+                      <input id="redeemQty" type="number" min="1" max="9" value="1" />
+                    </label>
+                  </div>
+
+                  <div class="redeemRow">
+                    <div class="coupon coupon--light">
+                      <div class="coupon__left">
+                        <div class="coupon__title">Aplicación de beneficios</div>
+                        <div class="coupon__sub">Se aplica el mejor escenario según servicio y vigencia.</div>
+                      </div>
+                      <div class="coupon__right">
+                        <label class="field field--inline coupon__field">
+                          <span>Cupón</span>
+                          <input id="redeemCoupon" type="text" placeholder="MCT50" />
+                        </label>
+                        <button id="redeemApplyCouponBtn" class="btn btn--accent" type="button">Aplicar</button>
+                        <div id="redeemCouponStatus" class="coupon__status" aria-live="polite"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="redeemRow">
+                    <div class="note">
+                      <div class="note__title">Condiciones</div>
+                      <ul class="bullets">
+                        <li>Promo vigente hasta 27-feb-2026.</li>
+                        <li>Hiram Bingham: 50% válido para hasta 09 pasajes one way (según beneficio acumulado).</li>
+                        <li>Vistadome: 12% de descuento (rango).</li>
+                        <li>Expedition: 9% de descuento (rango).</li>
+                        <li>Vistadome Observatory: sin descuento por rango en esta simulación.</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="redeemRow">
+                    <button id="calcBtn" class="btn btn--primary" type="submit">Calcular monto</button>
+                    <button id="confirmBtn" class="btn btn--accent" type="button" disabled>Confirmar canje</button>
+                  </div>
+                </form>
+              </section>
+
+              <aside class="redeemRight">
+                <div class="subhead">
+                  <div class="subhead__title">Resumen de pago</div>
+                  <div class="subhead__right">
+                    <span class="pill">Cálculo</span>
+                  </div>
+                </div>
+
+                <div class="summary">
+                  <div class="summary__row">
+                    <div>Tarifa base (promo)</div>
+                    <div id="sumBase" class="money">USD 0.00</div>
+                  </div>
+                  <div class="summary__row">
+                    <div>Descuento por rango</div>
+                    <div id="sumRank" class="money">- USD 0.00</div>
+                  </div>
+                  <div class="summary__row">
+                    <div>Descuento por canje (HB 50%)</div>
+                    <div id="sumHB" class="money">- USD 0.00</div>
+                  </div>
+                  <div class="summary__row">
+                    <div>Descuento cupón (50%)</div>
+                    <div id="sumCoupon" class="money">- USD 0.00</div>
+                  </div>
+                  <div class="summary__divider"></div>
+                  <div class="summary__row summary__row--total">
+                    <div>Total a pagar</div>
+                    <div id="sumTotal" class="money">USD 0.00</div>
+                  </div>
+
+                  <div class="summary__meta" id="sumMeta"></div>
+                </div>
+
+                <div class="card card--tight">
+                  <div class="card__title">Beneficios disponibles</div>
+                  <div class="card__sub" id="availBenefits"></div>
+                </div>
+              </aside>
+            </div>
+          </section>
+
+          <footer class="footer">
+            <small>El módulo de canjes simula cálculo. No genera boletos reales.</small>
+          </footer>
+        </section>
+
+        <!-- VIEW: REPORTES (placeholder) -->
+        <section id="view-reportes" class="view hidden">
+          <section class="panel">
+            <div class="panel__title">
+              <h2>Reportes</h2>
+              <div class="panel__badge">Demo</div>
+            </div>
+            <div class="pad">
+              <div class="empty">
+                <div class="empty__title">Módulo en construcción</div>
+                <div class="empty__sub">Puedes conectar esta sección a reportes y exportaciones.</div>
+              </div>
             </div>
           </section>
         </section>
 
-        <footer class="footer">
-          <small>Demo UI para GitHub Pages. No es un sistema de venta real.</small>
-        </footer>
+        <!-- VIEW: OPCIONES (placeholder) -->
+        <section id="view-opciones" class="view hidden">
+          <section class="panel">
+            <div class="panel__title">
+              <h2>Opciones</h2>
+              <div class="panel__badge">Demo</div>
+            </div>
+            <div class="pad">
+              <div class="empty">
+                <div class="empty__title">Configuración</div>
+                <div class="empty__sub">Preferencias de agencia, usuarios y seguridad (demo).</div>
+              </div>
+            </div>
+          </section>
+        </section>
+
       </main>
     </div>
   </div>
