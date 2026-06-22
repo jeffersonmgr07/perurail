@@ -17,9 +17,9 @@
   <main id="loginView" class="login">
     <div class="login__shell">
       <header class="login__top">
-        <div class="brand">
-          <div class="brand__mark" aria-hidden="true"></div>
-          <div class="brand__text">
+        <div class="brand brand--logo">
+          <img class="brand__logo" src="./IMG/logo%20per%C3%BArail.png" alt="PeruRail Extranet Agencias" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" />
+          <div class="brand__fallback">
             <div class="brand__name">PERURAIL</div>
             <div class="brand__sub">Extranet de Agencias</div>
           </div>
@@ -61,9 +61,9 @@
   <div id="appView" class="app hidden">
     <header class="topbar">
       <div class="topbar__left">
-        <div class="brand brand--small">
-          <div class="brand__mark" aria-hidden="true"></div>
-          <div class="brand__text">
+        <div class="brand brand--small brand--logo">
+          <img class="brand__logo" src="./IMG/logo%20per%C3%BArail.png" alt="PeruRail Extranet Agencias" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" />
+          <div class="brand__fallback">
             <div class="brand__name">PERURAIL</div>
             <div class="brand__sub">Extranet de Agencias</div>
           </div>
@@ -72,6 +72,7 @@
 
       <nav class="topbar__nav" aria-label="Navegación superior">
         <a href="#" class="toplink is-active" data-view="compra">COMPRA</a>
+        <a href="#" class="toplink" data-view="beneficios">BENEFICIOS</a>
         <a href="#" class="toplink" data-view="millas">MILLAS</a>
         <a href="#" class="toplink" data-view="canjes">CANJES</a>
         <a href="#" class="toplink" data-view="reportes">REPORTES</a>
@@ -98,6 +99,7 @@
     <div class="layout">
       <aside class="sidebar" aria-label="Menú lateral">
         <a class="sideitem is-active" href="#" data-view="compra">COMPRA<br><small>de Boletos</small></a>
+        <a class="sideitem" href="#" data-view="beneficios">BENEFICIOS<br><small>Exclusivos</small></a>
         <a class="sideitem" href="#" data-view="millas">MILLAS<br><small>Acumulación</small></a>
         <a class="sideitem" href="#" data-view="canjes">CANJES<br><small>Beneficios</small></a>
         <a class="sideitem is-disabled" href="#">CONSULTA<br><small>de Reservas</small></a>
@@ -258,6 +260,187 @@
 
           <footer class="footer">
             <small>Demo UI: Compra con promo, millas y canjes. Sin emisión real.</small>
+          </footer>
+        </section>
+
+
+
+        <!-- VIEW: BENEFICIOS EXCLUSIVOS -->
+        <section id="view-beneficios" class="view hidden">
+          <section class="panel">
+            <div class="panel__title">
+              <h2>Beneficios Exclusivos</h2>
+              <div class="panel__badge">Compra anticipada</div>
+            </div>
+
+            <section class="promoBanner promoBanner--exclusive" aria-label="Beneficio exclusivo Hiram Bingham">
+              <div class="promoBanner__image promoBanner__image--hb" role="img" aria-label="Tren de lujo Hiram Bingham"></div>
+              <div class="promoBanner__content">
+                <div class="promoBanner__badge">BENEFICIO EXCLUSIVO</div>
+                <h3>Compra anticipada · Tren de lujo Hiram Bingham</h3>
+                <p id="hbExclusiveStateText">One way con fecha abierta, 40% de descuento y viaje hasta junio de 2027.</p>
+                <div class="promoBanner__code">
+                  Vigencia de compra: <strong>22–25 jun 2026</strong> · Stock máximo: <strong>16 tramos</strong>
+                </div>
+              </div>
+            </section>
+
+            <div class="exclusiveWrap">
+              <div class="exclusiveStats">
+                <div class="statusCard">
+                  <div class="statusCard__title">Estado</div>
+                  <div class="statusCard__value" id="hbExclusiveStatus">Activo</div>
+                  <div class="statusCard__sub">Lunes 22 a jueves 25 de junio de 2026</div>
+                </div>
+                <div class="statusCard">
+                  <div class="statusCard__title">Stock disponible</div>
+                  <div class="statusCard__value" id="hbExclusiveStock">16 tramos</div>
+                  <div class="statusCard__sub">Cada ida cuenta como 1 tramo. Ida y vuelta consume 2.</div>
+                </div>
+                <div class="statusCard">
+                  <div class="statusCard__title">Precio neto por tramo</div>
+                  <div class="statusCard__value" id="hbExclusiveNetFare">USD 293.94</div>
+                  <div class="statusCard__sub">Tarifa US$ 489.90 - 40%</div>
+                </div>
+              </div>
+
+              <div class="exclusiveGrid">
+                <section class="proPanel">
+                  <div class="subhead subhead--flat">
+                    <div class="subhead__title">Datos de compra</div>
+                    <div class="subhead__right">
+                      <span class="pill pill--gold">Hiram Bingham</span>
+                      <span class="pill">Fecha abierta</span>
+                    </div>
+                  </div>
+
+                  <form id="hbExclusiveForm" class="proForm">
+                    <div class="proRow">
+                      <label class="field field--inline">
+                        <span>Tipo de compra</span>
+                        <select id="hbExclusiveTripType">
+                          <option value="oneway">SOLO IDA / 1 tramo</option>
+                          <option value="roundtrip">IDA Y RETORNO / 2 tramos</option>
+                        </select>
+                      </label>
+
+                      <label class="field field--inline">
+                        <span>Ruta inicial</span>
+                        <select id="hbExclusiveRoute">
+                          <option value="OLLA-MAPI">OLLANTAYTAMBO → MACHU PICCHU</option>
+                          <option value="MAPI-OLLA">MACHU PICCHU → OLLANTAYTAMBO</option>
+                        </select>
+                      </label>
+
+                      <label class="field field--inline">
+                        <span>Cantidad de pasajeros</span>
+                        <input id="hbExclusiveQty" type="number" min="1" max="16" value="1" />
+                      </label>
+                    </div>
+
+                    <div class="proRow">
+                      <label class="switch">
+                        <input id="hbExclusiveOpenDate" type="checkbox" checked disabled />
+                        <span class="switch__ui"></span>
+                        <span class="switch__label">Fecha abierta obligatoria</span>
+                      </label>
+
+                      <div class="proHint">
+                        Aplica para viajar hasta el <strong>30 de junio de 2027</strong>. La fecha final se coordina después de la compra, según disponibilidad operativa del tren.
+                      </div>
+                    </div>
+
+                    <div class="tablewrap tablewrap--soft">
+                      <table class="grid grid--compact exclusiveSchedule" aria-label="Horario Hiram Bingham seleccionado">
+                        <thead>
+                          <tr>
+                            <th>Tramo</th>
+                            <th>Tren</th>
+                            <th>Salida</th>
+                            <th>Llegada</th>
+                            <th>Duración</th>
+                          </tr>
+                        </thead>
+                        <tbody id="hbExclusiveScheduleBody"></tbody>
+                      </table>
+                    </div>
+
+                    <div class="proRow proRow--actions">
+                      <button class="btn btn--primary" type="submit" id="hbExclusiveCalcBtn">Calcular</button>
+                      <button class="btn btn--accent" type="button" id="hbExclusiveConfirmBtn" disabled>Comprar beneficio</button>
+                    </div>
+                  </form>
+                </section>
+
+                <aside class="proPanel proPanel--summary">
+                  <div class="subhead subhead--flat">
+                    <div class="subhead__title">Resumen de promoción</div>
+                    <div class="subhead__right"><span class="pill">40% OFF</span></div>
+                  </div>
+
+                  <div class="summary">
+                    <div class="summary__row">
+                      <div>Precio regular por tramo</div>
+                      <div id="hbExUnitRegular" class="money">USD 489.90</div>
+                    </div>
+                    <div class="summary__row">
+                      <div>Precio promo por tramo</div>
+                      <div id="hbExUnitPromo" class="money">USD 293.94</div>
+                    </div>
+                    <div class="summary__row">
+                      <div>Tramos a comprar</div>
+                      <div id="hbExSegments" class="money">1</div>
+                    </div>
+                    <div class="summary__row">
+                      <div>Importe regular</div>
+                      <div id="hbExBase" class="money">USD 489.90</div>
+                    </div>
+                    <div class="summary__row">
+                      <div>Ahorro 40%</div>
+                      <div id="hbExDiscount" class="money">- USD 195.96</div>
+                    </div>
+                    <div class="summary__divider"></div>
+                    <div class="summary__row summary__row--total">
+                      <div>Total a pagar</div>
+                      <div id="hbExTotal" class="money">USD 293.94</div>
+                    </div>
+                    <div class="summary__meta" id="hbExMeta">Calcula para validar stock y vigencia.</div>
+                  </div>
+
+                  <div class="card card--tight">
+                    <div class="card__title">Condiciones demo</div>
+                    <div class="card__sub">Máximo 16 tramos disponibles. La compra es de fecha abierta y no emite boletos reales.</div>
+                  </div>
+                </aside>
+              </div>
+
+              <div class="proPanel exclusiveHistory">
+                <div class="subhead subhead--flat">
+                  <div class="subhead__title">Compras registradas</div>
+                  <div class="subhead__right"><span class="pill">Demo</span></div>
+                </div>
+                <div class="tablewrap">
+                  <table class="grid grid--compact" aria-label="Compras registradas del beneficio">
+                    <thead>
+                      <tr>
+                        <th>Operación</th>
+                        <th>Tipo</th>
+                        <th>Pasajeros</th>
+                        <th>Tramos</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="hbExclusiveLog">
+                      <tr><td colspan="5" class="mutedCell">Sin compras registradas en esta sesión.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <footer class="footer">
+            <small>Demo: beneficio Hiram Bingham con fecha abierta. No se emiten boletos reales.</small>
           </footer>
         </section>
 

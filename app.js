@@ -92,6 +92,14 @@ const SCHEDULES = [
 const HB_PUBLISHED = 570.00; // publicado por tramo
 const HB_RACK = 490.00;      // rack/confidencial (no aplica cupón ni millas ni HB50)
 
+/* Beneficio exclusivo HB: compra anticipada con fecha abierta */
+const HB_EXCLUSIVE_START_ISO = "2026-06-22";
+const HB_EXCLUSIVE_END_ISO = "2026-06-25";
+const HB_EXCLUSIVE_TRAVEL_BY_ISO = "2027-06-30";
+const HB_EXCLUSIVE_STOCK_INITIAL = 16; // máximo de tramos / one way
+const HB_EXCLUSIVE_UNIT = 489.90;
+const HB_EXCLUSIVE_RATE = 0.40;
+
 /* Helpers */
 function money(n){ return `USD ${Number(n).toFixed(2)}`; }
 function toMinutes(hhmm){ const [h,m] = hhmm.split(":").map(Number); return h*60 + m; }
@@ -103,6 +111,20 @@ function isoToday(){
 }
 function isPromoActive(){ return isoToday() <= PROMO_END_ISO; }
 function setDateDefault(inputEl){ if(inputEl) inputEl.value = inputEl.value || isoToday(); }
+function isHbExclusiveActive(){
+  const today = isoToday();
+  return today >= HB_EXCLUSIVE_START_ISO && today <= HB_EXCLUSIVE_END_ISO;
+}
+function routeLabel(route){
+  return route === "OLLA-MAPI" ? "Ollantaytambo → Machu Picchu" : "Machu Picchu → Ollantaytambo";
+}
+function oppositeRoute(route){
+  return route === "OLLA-MAPI" ? "MAPI-OLLA" : "OLLA-MAPI";
+}
+function hiramRowFor(route){
+  return SCHEDULES.find(r => r.route === route && r.service === "Hiram Bingham") || null;
+}
+function percent(n){ return `${Math.round(n*100)}%`; }
 
 function trainsFor(route, service){
   const rows = SCHEDULES.filter(r => r.route === route && r.service === service);
@@ -141,6 +163,7 @@ const loginForm = $("#loginForm");
 const logoutBtn = $("#logoutBtn");
 
 const viewCompra = $("#view-compra");
+const viewBeneficios = $("#view-beneficios");
 const viewMillas = $("#view-millas");
 const viewCanjes = $("#view-canjes");
 const viewReportes = $("#view-reportes");
@@ -226,6 +249,27 @@ const discApplyMilesBtn = $("#discApplyMilesBtn");
 const discMilesStatus = $("#discMilesStatus");
 const discConfirmBtn = $("#discConfirmBtn");
 
+/* Beneficio exclusivo HB */
+const hbExclusiveStateText = $("#hbExclusiveStateText");
+const hbExclusiveStatus = $("#hbExclusiveStatus");
+const hbExclusiveStock = $("#hbExclusiveStock");
+const hbExclusiveNetFare = $("#hbExclusiveNetFare");
+const hbExclusiveForm = $("#hbExclusiveForm");
+const hbExclusiveTripType = $("#hbExclusiveTripType");
+const hbExclusiveRoute = $("#hbExclusiveRoute");
+const hbExclusiveQty = $("#hbExclusiveQty");
+const hbExclusiveScheduleBody = $("#hbExclusiveScheduleBody");
+const hbExclusiveCalcBtn = $("#hbExclusiveCalcBtn");
+const hbExclusiveConfirmBtn = $("#hbExclusiveConfirmBtn");
+const hbExclusiveLog = $("#hbExclusiveLog");
+const hbExUnitRegular = $("#hbExUnitRegular");
+const hbExUnitPromo = $("#hbExUnitPromo");
+const hbExSegments = $("#hbExSegments");
+const hbExBase = $("#hbExBase");
+const hbExDiscount = $("#hbExDiscount");
+const hbExTotal = $("#hbExTotal");
+const hbExMeta = $("#hbExMeta");
+
 /* State */
 let selectedRowId = null;
 let compraCouponApplied = false;
@@ -236,6 +280,10 @@ let hbCouponApplied = false;
 let hbMilesApplied = 0;
 let discCouponApplied = false;
 let discMilesApplied = 0;
+
+let hbExclusiveStockLeft = HB_EXCLUSIVE_STOCK_INITIAL;
+let hbExclusiveOperation = 1;
+let lastHbExclusiveCalc = null;
 
 let lastCalc = null; // {kind, ...}
 
@@ -432,11 +480,226 @@ function renderMillas(){
     : "Promo expirada. No aplica cupón ni beneficios promocionales.";
 }
 
+
+/* ---------------- Beneficios exclusivos HB ---------------- */
+
+function hbExclusiveSegmentsPerPassenger(){
+  return hbExclusiveTripType && hbExclusiveTripType.value === "roundtrip" ? 2 : 1;
+}
+
+function hbExclusiveTripLabel(){
+  return hbExclusiveSegmentsPerPassenger() === 2 ? "Ida y retorno" : "Solo ida";
+}
+
+function updateHbExclusiveQtyLimit(){
+  if(!hbExclusiveQty) return;
+  const perPax = hbExclusiveSegmentsPerPassenger();
+  const maxPax = Math.floor(hbExclusiveStockLeft / perPax);
+  const disabled = maxPax <= 0;
+
+  hbExclusiveQty.disabled = disabled;
+  hbExclusiveQty.min = disabled ? "0" : "1";
+  hbExclusiveQty.max = String(Math.max(0, maxPax));
+
+  let qty = Number(hbExclusiveQty.value || 0);
+  if(disabled){
+    hbExclusiveQty.value = "0";
+    return;
+  }
+  if(qty < 1) qty = 1;
+  if(qty > maxPax) qty = maxPax;
+  hbExclusiveQty.value = String(qty);
+}
+
+function renderHbExclusiveStatus(){
+  if(!hbExclusiveStatus) return;
+  const active = isHbExclusiveActive();
+  const soldOut = hbExclusiveStockLeft <= 0;
+  const unitPromo = HB_EXCLUSIVE_UNIT * (1 - HB_EXCLUSIVE_RATE);
+
+  hbExclusiveStatus.classList.remove("is-ok", "is-bad", "is-warn");
+  if(soldOut){
+    hbExclusiveStatus.textContent = "Agotado";
+    hbExclusiveStatus.classList.add("is-warn");
+  } else if(active){
+    hbExclusiveStatus.textContent = "Activo";
+    hbExclusiveStatus.classList.add("is-ok");
+  } else {
+    hbExclusiveStatus.textContent = "Fuera de vigencia";
+    hbExclusiveStatus.classList.add("is-bad");
+  }
+
+  hbExclusiveStock.textContent = `${hbExclusiveStockLeft} tramo(s)`;
+  hbExclusiveNetFare.textContent = money(unitPromo);
+
+  hbExclusiveStateText.textContent = active
+    ? `Disponible hasta el jueves 25 de junio de 2026. Compra con fecha abierta para viajar hasta el 30 de junio de 2027.`
+    : `Promoción válida solo del 22 al 25 de junio de 2026. Viaje permitido hasta el 30 de junio de 2027.`;
+
+  hbExclusiveCalcBtn.disabled = !active || soldOut;
+}
+
+function renderHbExclusiveSchedule(){
+  if(!hbExclusiveScheduleBody) return;
+  hbExclusiveScheduleBody.innerHTML = "";
+
+  const routes = [hbExclusiveRoute.value];
+  if(hbExclusiveSegmentsPerPassenger() === 2) routes.push(oppositeRoute(hbExclusiveRoute.value));
+
+  routes.forEach((route, idx)=>{
+    const row = hiramRowFor(route);
+    const tr = document.createElement("tr");
+    if(row){
+      tr.innerHTML = `
+        <td><span class="pill">${idx === 0 ? "Tramo 1" : "Tramo 2"}</span> ${routeLabel(route)}</td>
+        <td><span class="pill pill--gold">HB ${row.train}</span></td>
+        <td><strong>${row.depart}</strong></td>
+        <td>${row.arrive}</td>
+        <td>${row.duration}</td>
+      `;
+    } else {
+      tr.innerHTML = `<td colspan="5">No se encontró horario Hiram Bingham para ${routeLabel(route)}.</td>`;
+    }
+    hbExclusiveScheduleBody.appendChild(tr);
+  });
+}
+
+function calcHbExclusive(){
+  if(!isHbExclusiveActive()){
+    return { ok:false, msg:"La promoción está fuera de vigencia. Solo aplica del 22 al 25 de junio de 2026." };
+  }
+  if(hbExclusiveStockLeft <= 0){
+    return { ok:false, msg:"Stock agotado. Ya no quedan tramos disponibles para esta promoción." };
+  }
+
+  const perPax = hbExclusiveSegmentsPerPassenger();
+  const qty = Math.max(0, Number(hbExclusiveQty.value || 0));
+  const tickets = qty * perPax;
+
+  if(qty < 1){
+    return { ok:false, msg:"Ingresa al menos 1 pasajero." };
+  }
+  if(tickets > hbExclusiveStockLeft){
+    return {
+      ok:false,
+      msg:`Stock insuficiente. Esta selección usa ${tickets} tramo(s), pero quedan ${hbExclusiveStockLeft}.`
+    };
+  }
+
+  const base = HB_EXCLUSIVE_UNIT * tickets;
+  const discount = base * HB_EXCLUSIVE_RATE;
+  const total = base - discount;
+  const unitPromo = HB_EXCLUSIVE_UNIT * (1 - HB_EXCLUSIVE_RATE);
+  const routes = [hbExclusiveRoute.value];
+  if(perPax === 2) routes.push(oppositeRoute(hbExclusiveRoute.value));
+
+  const meta = [
+    `Beneficio exclusivo Hiram Bingham`,
+    `Tipo: ${hbExclusiveTripLabel()} · Pasajeros: ${qty}`,
+    `Tramos/boletos one way a emitir luego: ${tickets}`,
+    `Ruta(s): ${routes.map(routeLabel).join(" + ")}`,
+    `Compra con fecha abierta. Viaje permitido hasta el 30-jun-2027.`,
+    `Precio por tramo: ${money(HB_EXCLUSIVE_UNIT)} → ${money(unitPromo)} (${percent(HB_EXCLUSIVE_RATE)} de descuento)`,
+    `Stock después de confirmar: ${hbExclusiveStockLeft - tickets} tramo(s)`
+  ].join("\n");
+
+  return {
+    ok:true,
+    qty,
+    tickets,
+    perPax,
+    base,
+    discount,
+    total,
+    unitPromo,
+    tripLabel: hbExclusiveTripLabel(),
+    routes,
+    meta
+  };
+}
+
+function renderHbExclusiveSummary(calc){
+  if(!hbExMeta) return;
+
+  const unitPromo = HB_EXCLUSIVE_UNIT * (1 - HB_EXCLUSIVE_RATE);
+  const fallbackQty = Math.max(0, Number(hbExclusiveQty?.value || 0));
+  const fallbackTickets = fallbackQty * hbExclusiveSegmentsPerPassenger();
+  const base = calc?.ok ? calc.base : HB_EXCLUSIVE_UNIT * fallbackTickets;
+  const discount = calc?.ok ? calc.discount : base * HB_EXCLUSIVE_RATE;
+  const total = calc?.ok ? calc.total : Math.max(0, base - discount);
+
+  hbExUnitRegular.textContent = money(HB_EXCLUSIVE_UNIT);
+  hbExUnitPromo.textContent = money(unitPromo);
+  hbExSegments.textContent = String(calc?.ok ? calc.tickets : fallbackTickets);
+  hbExBase.textContent = money(base);
+  hbExDiscount.innerHTML = `<span class="is-save">- ${money(discount)}</span>`;
+  hbExTotal.textContent = money(total);
+  hbExMeta.textContent = calc?.ok ? calc.meta : (calc?.msg || "Calcula para validar stock y vigencia.");
+}
+
+function renderHbExclusive(){
+  if(!hbExclusiveForm) return;
+  updateHbExclusiveQtyLimit();
+  renderHbExclusiveStatus();
+  renderHbExclusiveSchedule();
+  const calc = calcHbExclusive();
+  renderHbExclusiveSummary(calc);
+  lastHbExclusiveCalc = null;
+  hbExclusiveConfirmBtn.disabled = true;
+}
+
+function appendHbExclusiveLog(calc){
+  if(!hbExclusiveLog || !calc?.ok) return;
+  if(hbExclusiveLog.querySelector(".mutedCell")) hbExclusiveLog.innerHTML = "";
+
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>#HB-${String(hbExclusiveOperation).padStart(3,"0")}</td>
+    <td>${calc.tripLabel}</td>
+    <td>${calc.qty}</td>
+    <td>${calc.tickets}</td>
+    <td class="money">${money(calc.total)}</td>
+  `;
+  hbExclusiveLog.prepend(tr);
+  hbExclusiveOperation += 1;
+}
+
+function attachHbExclusiveEvents(){
+  if(!hbExclusiveForm) return;
+
+  [hbExclusiveTripType, hbExclusiveRoute].forEach(el=>{
+    el.addEventListener("change", renderHbExclusive);
+  });
+  hbExclusiveQty.addEventListener("input", renderHbExclusive);
+  hbExclusiveQty.addEventListener("change", renderHbExclusive);
+
+  hbExclusiveForm.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const calc = calcHbExclusive();
+    lastHbExclusiveCalc = calc;
+    renderHbExclusiveSummary(calc);
+    hbExclusiveConfirmBtn.disabled = !calc.ok;
+  });
+
+  hbExclusiveConfirmBtn.addEventListener("click", ()=>{
+    if(!lastHbExclusiveCalc || !lastHbExclusiveCalc.ok) return;
+    hbExclusiveStockLeft = Math.max(0, hbExclusiveStockLeft - lastHbExclusiveCalc.tickets);
+    appendHbExclusiveLog(lastHbExclusiveCalc);
+    const msg = `Compra registrada (demo). Stock restante: ${hbExclusiveStockLeft} tramo(s).`;
+    renderHbExclusive();
+    hbExMeta.textContent = msg;
+    alert(msg);
+  });
+
+  renderHbExclusive();
+}
+
 /* ---------------- Navegación ---------------- */
 
 function setActiveView(key){
   const map = {
     compra: viewCompra,
+    beneficios: viewBeneficios,
     millas: viewMillas,
     canjes: viewCanjes,
     reportes: viewReportes,
@@ -450,6 +713,7 @@ function setActiveView(key){
 
   updatePromoUI();
   if(key==="compra") renderCompra();
+  if(key==="beneficios") renderHbExclusive();
   if(key==="millas") renderMillas();
   if(key==="canjes") {
     fillHBTrains();
@@ -1136,6 +1400,7 @@ function initApp(){
 
   attachHBEvents();
   attachDiscEvents();
+  attachHbExclusiveEvents();
 
   attachNavigation();
   setActiveView("compra");

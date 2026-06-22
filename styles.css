@@ -330,3 +330,70 @@ small{color:var(--muted)}
   .canjesPro__status{grid-template-columns:1fr}
   .canjesPro__grid{grid-template-columns:1fr}
 }
+
+/* Logo PeruRail externo */
+.brand--logo{min-width:0}
+.brand__logo{
+  display:block;
+  height:42px;
+  width:auto;
+  max-width:230px;
+  object-fit:contain;
+}
+.brand--small .brand__logo{height:34px;max-width:190px}
+.brand__fallback{display:none;line-height:1.05}
+.login__top .brand__fallback .brand__name{color:var(--pr-blue)}
+.login__top .brand__fallback .brand__sub{color:var(--muted)}
+.topbar .brand__fallback .brand__name{color:#fff}
+.topbar .brand__fallback .brand__sub{color:rgba(255,255,255,.75)}
+
+/* Beneficio exclusivo Hiram Bingham */
+.promoBanner--exclusive{
+  background:
+    linear-gradient(180deg,#fff,#fbfcff),
+    radial-gradient(circle at 90% 20%, rgba(201,162,77,.16), transparent 42%);
+}
+.promoBanner__image--hb{
+  background:
+    linear-gradient(135deg, rgba(11,22,48,.82), rgba(11,22,48,.18)),
+    radial-gradient(circle at 30% 35%, rgba(201,162,77,.48), transparent 54%),
+    linear-gradient(120deg, #0b1630, #283451);
+}
+.exclusiveWrap{padding:14px 16px 16px 16px}
+.exclusiveStats{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:12px;
+  margin-bottom:14px;
+}
+.exclusiveGrid{
+  display:grid;
+  grid-template-columns:1.08fr .92fr;
+  gap:14px;
+}
+.tablewrap--soft{
+  border:1px solid var(--line);
+  border-radius:16px;
+  overflow:auto;
+  margin:2px 0 14px 0;
+}
+.exclusiveSchedule{min-width:680px}
+.proRow--actions{margin-bottom:0}
+.exclusiveHistory{margin-top:14px}
+.mutedCell{color:var(--muted);font-weight:800;text-align:center;background:#fbfcff}
+.statusCard__value.is-ok{color:#0f5132}
+.statusCard__value.is-bad{color:#842029}
+.statusCard__value.is-warn{color:#946200}
+.summary__row .is-save{color:#0f5132;font-weight:900}
+.summary__row .is-bad{color:#842029;font-weight:900}
+
+@media (max-width: 1020px){
+  .exclusiveStats{grid-template-columns:1fr}
+  .exclusiveGrid{grid-template-columns:1fr}
+  .brand__logo{max-width:190px}
+}
+@media (max-width: 560px){
+  .brand__logo{height:34px;max-width:170px}
+  .brand--small .brand__logo{height:30px;max-width:150px}
+  .promoBanner{grid-template-columns:1fr}
+}
