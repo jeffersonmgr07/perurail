@@ -24,7 +24,7 @@
             <div class="brand__sub">Extranet de Agencias</div>
           </div>
         </div>
-        <div class="login__meta">ACCESO DEMO</div>
+        <div class="login__meta">ACCESO AGENCIA</div>
       </header>
 
       <section class="login__card">
@@ -35,18 +35,19 @@
           </div>
         </div>
 
-        <form id="loginForm" class="login__form" autocomplete="on">
+        <form id="loginForm" class="login__form" autocomplete="on" novalidate>
           <label class="field">
-            <span>Usuario</span>
-            <input type="text" placeholder="Usuario" required />
+            <span>Correo</span>
+            <input id="loginEmail" name="email" type="email" placeholder="correo@agencia.com" autocomplete="username" required />
           </label>
           <label class="field">
-            <span>Contraseña</span>
-            <input type="password" placeholder="Contraseña" required />
+            <span>Clave</span>
+            <input id="loginPassword" name="password" type="password" placeholder="Clave de acceso" autocomplete="current-password" required />
           </label>
           <button class="btn btn--primary" type="submit">Ingresar</button>
+          <div id="loginError" class="login__error" role="alert" aria-live="polite"></div>
           <div class="login__hint">
-            Demo: cualquier usuario y contraseña.
+            Acceso restringido para agencia autorizada.
           </div>
         </form>
 

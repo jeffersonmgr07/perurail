@@ -1406,15 +1406,49 @@ function initApp(){
   setActiveView("compra");
 }
 
-/* Login mock */
-loginForm.addEventListener("submit", (e)=>{
-  e.preventDefault();
+/* Login restringido */
+const AUTH_CREDENTIALS = {
+  email: "reservas@mycuscotrip.com",
+  password: "MyCusco2019*"
+};
+let appInitialized = false;
+
+function showLoginError(message){
+  const errorBox = document.querySelector("#loginError");
+  if(errorBox){
+    errorBox.textContent = message || "";
+    errorBox.classList.toggle("is-visible", Boolean(message));
+  }
+}
+
+function openApp(){
   loginView.classList.add("hidden");
   appView.classList.remove("hidden");
-  initApp();
+  if(!appInitialized){
+    initApp();
+    appInitialized = true;
+  }
+}
+
+loginForm.addEventListener("submit", (e)=>{
+  e.preventDefault();
+
+  const email = document.querySelector("#loginEmail")?.value.trim().toLowerCase() || "";
+  const password = document.querySelector("#loginPassword")?.value || "";
+
+  if(email === AUTH_CREDENTIALS.email && password === AUTH_CREDENTIALS.password){
+    showLoginError("");
+    openApp();
+    return;
+  }
+
+  showLoginError("Correo o clave incorrectos. Verifica tus credenciales de agencia.");
+  document.querySelector("#loginPassword")?.focus();
 });
 
 logoutBtn.addEventListener("click", ()=>{
   appView.classList.add("hidden");
   loginView.classList.remove("hidden");
+  loginForm.reset();
+  showLoginError("");
 });
