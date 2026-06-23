@@ -1,4 +1,4 @@
-/* Demo Extranet PeruRail - My Cusco Trip (GitHub Pages, sin backend) */
+/*  Extranet PeruRail - My Cusco Trip (GitHub Pages, sin backend) */
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -685,7 +685,7 @@ function attachHbExclusiveEvents(){
     if(!lastHbExclusiveCalc || !lastHbExclusiveCalc.ok) return;
     hbExclusiveStockLeft = Math.max(0, hbExclusiveStockLeft - lastHbExclusiveCalc.tickets);
     appendHbExclusiveLog(lastHbExclusiveCalc);
-    const msg = `Compra registrada (demo). Stock restante: ${hbExclusiveStockLeft} tramo(s).`;
+    const msg = `Compra registrada. Stock restante: ${hbExclusiveStockLeft} tramo(s).`;
     renderHbExclusive();
     hbExMeta.textContent = msg;
     alert(msg);
@@ -1096,8 +1096,8 @@ function attachHBEvents(){
     renderMillas();
     hbConfirmBtn.disabled = true;
     lastCalc = null;
-    resetSummary("HB confirmado (demo). Saldo HB50 y millas actualizado.");
-    alert("Hiram Bingham confirmado (demo).");
+    resetSummary("HB confirmado. Saldo HB50 y millas actualizado.");
+    alert("Hiram Bingham confirmado.");
   });
 }
 
@@ -1312,8 +1312,8 @@ function attachDiscEvents(){
     renderMillas();
     discConfirmBtn.disabled = true;
     lastCalc = null;
-    resetSummary("Compra confirmada (demo). Millas actualizadas.");
-    alert("Compra confirmada (demo).");
+    resetSummary("Compra confirmada. Millas actualizadas.");
+    alert("Compra confirmada.");
   });
 }
 
@@ -1372,7 +1372,7 @@ function attachCompraEvents(){
 
   buyBtn.addEventListener("click", ()=>{
     if(!selectedRowId) return;
-    alert("Demo: continuarías al flujo de emisión/pago en un sistema real.");
+    alert("Peru Rail: continuarías al flujo de emisión/pago en un sistema real.");
   });
 }
 
