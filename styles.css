@@ -359,7 +359,7 @@ small{color:var(--muted)}
   background:
     linear-gradient(135deg, rgba(11,22,48,.86), rgba(11,22,48,.54)),
     radial-gradient(circle at 90% 20%, rgba(201,162,77,.22), transparent 42%),
-    url("./img/hiram1.jpeg");
+    url("./img/hiram2.jpg");
   background-size:cover;
   background-position:center;
 }
