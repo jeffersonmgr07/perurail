@@ -122,10 +122,12 @@ small{color:var(--muted)}
 }
 .profilechip__icon{
   width:34px;height:34px;border-radius:12px;
+  display:grid;place-items:center;
   background:
     radial-gradient(circle at 30% 30%, rgba(255,255,255,.20), transparent 55%),
     linear-gradient(180deg, rgba(201,162,77,.95), rgba(177,138,53,.95));
-  box-shadow:0 10px 22px rgba(0,0,0,.18)
+  box-shadow:0 10px 22px rgba(0,0,0,.18);
+  color:#1b1406;font-weight:900;font-size:18px;letter-spacing:.02em
 }
 .profilechip__text{display:flex;flex-direction:column;gap:2px;font-size:12px;line-height:1.15}
 .profilechip__line1{color:#fff}
@@ -349,15 +351,33 @@ small{color:var(--muted)}
 
 /* Beneficio exclusivo Hiram Bingham */
 .promoBanner--exclusive{
+  position:relative;
+  overflow:hidden;
+  color:#fff;
   background:
-    linear-gradient(180deg,#fff,#fbfcff),
-    radial-gradient(circle at 90% 20%, rgba(201,162,77,.16), transparent 42%);
+    linear-gradient(135deg, rgba(11,22,48,.86), rgba(11,22,48,.54)),
+    radial-gradient(circle at 90% 20%, rgba(201,162,77,.22), transparent 42%),
+    url("./img/hiram1.jpeg");
+  background-size:cover;
+  background-position:center;
+}
+.promoBanner--exclusive .promoBanner__content{position:relative;z-index:1}
+.promoBanner--exclusive .promoBanner__content h3{color:#fff}
+.promoBanner--exclusive .promoBanner__content p{color:rgba(255,255,255,.88)}
+.promoBanner--exclusive .promoBanner__code{color:rgba(255,255,255,.92)}
+.promoBanner--exclusive .promoBanner__code strong{
+  color:#fff;
+  border-color:rgba(255,255,255,.32);
+  background:rgba(255,255,255,.12);
 }
 .promoBanner__image--hb{
+  position:relative;z-index:1;
   background:
-    linear-gradient(135deg, rgba(11,22,48,.82), rgba(11,22,48,.18)),
-    radial-gradient(circle at 30% 35%, rgba(201,162,77,.48), transparent 54%),
-    linear-gradient(120deg, #0b1630, #283451);
+    linear-gradient(135deg, rgba(11,22,48,.78), rgba(11,22,48,.20)),
+    radial-gradient(circle at 30% 35%, rgba(201,162,77,.38), transparent 54%),
+    url("./img/hiram1.jpeg");
+  background-size:cover;
+  background-position:center;
 }
 .exclusiveWrap{padding:14px 16px 16px 16px}
 .exclusiveStats{
