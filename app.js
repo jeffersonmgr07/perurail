@@ -1372,7 +1372,7 @@ function attachCompraEvents(){
 
   buyBtn.addEventListener("click", ()=>{
     if(!selectedRowId) return;
-    alert("Peru Rail: continuarías al flujo de emisión/pago en un sistema real.");
+    alert("Peru Rail: continuarías al flujo de emisión/pago en un sistema de emisión manual.");
   });
 }
 
